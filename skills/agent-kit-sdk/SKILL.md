@@ -7,6 +7,16 @@ description: "Agent Kit 集成目录：按 React、Vue、Node.js 引导接入 Bl
 
 本文件只做目录导航。根据宿主技术栈选择要读的文档。
 
+## 版本要求
+
+本技能基于以下版本或以上：
+
+- 阿里云镜像：`registry.cn-beijing.aliyuncs.com/bladeai/blade-agent:v0.4.7`
+- NPM：`@blade-hq/agent-kit@0.4.7`
+- PyPI：`blade-agent-kit==0.4.7`
+
+低于上述版本时，部分 API、样式入口或 skills 行为可能不一致，请先升级再按本技能集成。
+
 ## React 应用
 
 React 应用可以直接复用 SDK 组件。
