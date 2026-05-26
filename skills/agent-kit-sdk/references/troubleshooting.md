@@ -49,8 +49,10 @@ const client = new BladeClient({
   token: () => localStorage.getItem("blade-token"),
 })
 
-// 用户保存新 token 后
-getSocket().reconnect()
+// 用户保存新 token 后，通过 client 实例获取 socket 并重连
+const socket = client.socket()
+socket.disconnect()
+socket.connect()
 ```
 
 ## ChatView 能看历史但发不出消息
@@ -74,7 +76,7 @@ useSessionStore.getState().setActiveSession(sessionId)
 - payload 是否包含 `SKILL.md`。
 - 上传 API 是否返回成功。
 - `client.skills.listSessionSkills(sessionId)` 是否能看到新 skill。
-- `getSkillStats(sessionId)` 里的 loaded skill 是否包含目标 skill。
+- `client.skills.getSkillStats(sessionId)` 里的 loaded skill 是否包含目标 skill。
 
 ## 地图或宿主业务 UI 没有响应工具结果
 

@@ -28,7 +28,7 @@ await client.skills.uploadSessionSkill(sessionId, {
 - `name` 必须符合 `org/skill-name` 格式。
 - `files` 必须包含 `SKILL.md`。
 - 文件路径必须是相对路径，不能包含 `..`。
-- 上传后可用 `client.skills.listSessionSkills(sessionId)` 或 `getSkillStats(sessionId)` 验证。
+- 上传后可用 `client.skills.listSessionSkills(sessionId)` 或 `client.skills.getSkillStats(sessionId)` 验证。
 
 ## SKILL.md 示例
 

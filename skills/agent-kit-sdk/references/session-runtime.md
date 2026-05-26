@@ -34,9 +34,9 @@ const client = new BladeClient({
 用户保存新 token 后，应重连 socket：
 
 ```ts
-import { getSocket } from "@blade-hq/agent-kit/react"
-
-getSocket().reconnect()
+const socket = client.socket()
+socket.disconnect()
+socket.connect()
 ```
 
 ## 创建 session
@@ -50,7 +50,7 @@ React 使用 `ChatView` 时，同步 active session：
 ```ts
 import { useSessionStore } from "@blade-hq/agent-kit/react"
 
-useSessionStore.getState().setActiveSession(sessionId)
+useSessionStore.getState().setActiveSession(session_id)
 ```
 
 如果宿主自己创建 session，也要把 session 信息同步给 SDK store，或重新加载 session 列表。
