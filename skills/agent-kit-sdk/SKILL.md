@@ -7,6 +7,16 @@ description: "帮助第三方开发者在自己的 React 应用中接入 Blade A
 
 本技能面向使用 `@blade-hq/agent-kit` 的第三方开发者。目标是把 Blade Agent 的聊天、会话、文件预览、skills 和流式消息能力嵌入到宿主 React 应用中，而不是修改 SDK 源码。
 
+## 版本要求
+
+本技能基于以下版本或以上：
+
+- 阿里云镜像：`registry.cn-beijing.aliyuncs.com/bladeai/blade-agent:v0.4.7`
+- NPM：`@blade-hq/agent-kit@0.4.7`
+- PyPI：`blade-agent-kit==0.4.7`
+
+低于上述版本时，部分 API、样式入口或 skills 行为可能不一致，请先升级再按本技能集成。
+
 ## 先确认集成目标
 
 先问清楚或从代码中判断：
