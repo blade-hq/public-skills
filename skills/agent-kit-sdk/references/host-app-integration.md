@@ -53,9 +53,10 @@ React 宿主可从 `useGisStore` 消费 `map.*` 命令：
 
 ```tsx
 import { useEffect } from "react"
-import { useGisStore, type MapCommand } from "@blade-hq/agent-kit/react"
+import { useGisStore } from "@blade-hq/agent-kit/react"
+import type { GisMapCommand } from "@blade-hq/agent-kit/react"
 
-const EMPTY_COMMANDS: MapCommand[] = []
+const EMPTY_COMMANDS: GisMapCommand[] = []
 
 const commands = useGisStore((state) =>
   sessionId ? state.pendingMapCommandsBySession[sessionId] ?? EMPTY_COMMANDS : EMPTY_COMMANDS,
