@@ -97,3 +97,37 @@ Vue 不能直接使用 `ChatView`，因为它是 React 组件。Vue 应用使用
 5. 发送时 emit `chat:send`。
 
 无附件时，`chat:send.message` 使用纯字符串。
+
+### 推荐：用 getSessionTurns 取回复，避免手动拼 patch
+
+`turn:patch` 是增量投影，自己拼装文本较繁琐。最省事的做法是用 socket 只感知"开始/结束"，在 `chat:end` 后调一次 `client.sessions.getSessionTurns(sessionId)` 拿完整投影来渲染。每个 turn 的 `blocks` 里 `type === "text"` 的 `content` 就是文本。
+
+Vue 最小示例（已实测）：
+
+```ts
+import { BladeClient } from "@blade-hq/agent-kit/client"
+
+const client = new BladeClient({ baseUrl: window.location.origin, token: () => token })
+
+function extractText(blocks: unknown): string {
+  if (!Array.isArray(blocks)) return ""
+  return blocks
+    .filter((b: any) => b?.type === "text")
+    .map((b: any) => String(b.content ?? ""))
+    .join("")
+}
+
+const { session_id } = await client.sessions.createSession("vue chat")
+const socket = client.socket()
+socket.on("turn:patch", () => {/* 可选：标记“输出中…” */})
+socket.on("chat:end", async () => {
+  const turns = await client.sessions.getSessionTurns(session_id)
+  // turns: { role, blocks }[]；渲染其中 role==="assistant" 的最新一条
+  render(turns.map((t: any) => ({ role: t.role, text: extractText(t.blocks) })))
+})
+socket.connect()
+socket.emit("session:subscribe", { session_id })
+socket.emit("chat:send", { session_id, message: "你好" })
+```
+
+只要最终结果时这种最稳；需要逐字流式动画时，再叠加解析 `turn:patch` 的增量。
