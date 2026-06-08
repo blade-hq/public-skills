@@ -1,137 +1,80 @@
 # API 概览
 
-## 架构
+## 基础地址
 
-Blade Agent 由三层组成：
+所有 HTTP 接口的基础路径为 `/api`，完整 URL 示例：
 
 ```
-┌─────────────────────────────────────────────┐
-│  Transport (server)                         │
-│  FastAPI + Socket.IO — HTTP/WS 传输层       │
-├─────────────────────────────────────────────┤
-│  Host (host)                                │
-│  Engine / Session / LLM / Skills / Tools    │
-├─────────────────────────────────────────────┤
-│  Core (core)                                │
-│  Protocol 定义 + 纯函数 agent_loop()         │
-└─────────────────────────────────────────────┘
+https://blade.example.com/api/sessions
 ```
 
-- **Core** — 协议定义（`ToolSpec`, `ToolResult`, `LLMClient` 等）+ 纯函数 `agent_loop()`
-- **Host** — 所有实现：Engine、会话管理、LLM 对接、技能加载、工具注册
-- **Server** — HTTP REST + Socket.IO 实时传输
+Socket.IO 连接地址：
+
+```
+wss://blade.example.com/socket.io/
+```
 
 ## 认证
 
-所有请求（REST 和 Socket.IO）使用统一的 **Bearer Token**：
+所有请求（HTTP 和 WebSocket）使用统一的 Bearer Token 认证。
+
+### HTTP 请求
+
+在请求头中携带：
 
 ```
-Authorization: Bearer sk-blade-v2-...
+Authorization: Bearer sk-blade-v2-xxxxxxxxxx
+```
+
+### Socket.IO 连接
+
+在连接握手时通过 `auth` 参数传递：
+
+```json
+{
+  "token": "sk-blade-v2-xxxxxxxxxx"
+}
 ```
 
 ### Token 类型
 
-| 类型 | 说明 | 获取方式 |
-|------|------|----------|
-| API Key | 长期有效，推荐后端使用 | Web UI 创建 或 SDK `client.apiKeys.createApiKey()` |
-| Session JWT | 短期有效，浏览器同源使用 | 登录后自动获取（cookie） |
+| 类型 | 格式 | 说明 |
+|------|------|------|
+| API Key | `sk-blade-v2-...` | 长期有效，推荐后端服务使用 |
+| Session JWT | JWT 字符串 | 短期有效，浏览器同源场景 |
 
-### TypeScript 客户端
+API Key 通过 Web 管理界面创建，或调用 `POST /api/user/api-keys/` 接口创建。明文仅在创建时返回一次。
 
-```typescript
-import { BladeClient } from "@blade-hq/agent-kit/client"
+## 通用约定
 
-const client = new BladeClient({
-  baseUrl: "https://blade.example.com",
-  token: "sk-blade-v2-..."           // 静态
-  // token: () => getTokenFromStore() // 动态（token 变化后需重连 socket）
-})
+### 请求格式
+
+- Content-Type：`application/json`（除文件上传外）
+- 文件上传使用 `multipart/form-data`
+
+### 响应格式
+
+- 所有响应均为 JSON
+- 成功：HTTP 200（或 201/204）
+- 错误：HTTP 4xx/5xx，响应体：
+
+```json
+{
+  "detail": "错误描述"
+}
 ```
 
-### Python 客户端
+### 分页
 
-```python
-from blade_agent_kit import BladeAgentClient
+列表接口统一使用 `limit` + `offset` 分页：
 
-async with BladeAgentClient(
-    "http://127.0.0.1:8020",
-    token="sk-blade-v2-...",  # 或 env BLADE_AGENT_TOKEN
-) as client:
-    ...
-```
+| 参数 | 类型 | 默认值 | 说明 |
+|------|------|--------|------|
+| `limit` | int | 20 | 每页数量 |
+| `offset` | int | 0 | 起始偏移 |
 
-## SDK 入口
+响应中包含 `total` 字段表示总数。
 
-### NPM (`@blade-hq/agent-kit`)
+### 日期格式
 
-```bash
-npm install @blade-hq/agent-kit
-```
-
-| 入口 | 用途 |
-|------|------|
-| `@blade-hq/agent-kit/client` | `BladeClient`（纯 JS，任意框架） |
-| `@blade-hq/agent-kit/react` | `BladeClientProvider`, `useChat`, `useSessionStore`, `useUiBridgeStore` |
-| `@blade-hq/agent-kit/chat` | `ChatView` React 组件 |
-| `@blade-hq/agent-kit/style.css` | ChatView 样式 |
-
-### PyPI (`blade-agent-kit`)
-
-```bash
-pip install blade-agent-kit
-```
-
-```python
-from blade_agent_kit import (
-    BladeAgentClient,
-    TurnStart, TurnPatch, TurnEnd, ChatEnd, SystemError,
-)
-```
-
-## BladeClient 方法总览
-
-### Sessions
-
-```typescript
-client.sessions.createSession(intent: string)
-client.sessions.getSession(sessionId)
-client.sessions.listSessions()
-client.sessions.getSessionTurns(sessionId)
-client.sessions.getSessionHistory(sessionId)
-client.sessions.deleteSession(sessionId)
-```
-
-### Skills
-
-```typescript
-client.skills.uploadSessionSkill(sessionId, { name, files })
-client.skills.listSessionSkills(sessionId)
-client.skills.getSkillStats(sessionId)
-```
-
-### API Keys
-
-```typescript
-client.apiKeys.createApiKey(name)
-client.apiKeys.listApiKeys()
-client.apiKeys.renameApiKey(id, name)
-client.apiKeys.deleteApiKey(id)
-```
-
-### Headless QA
-
-```typescript
-const reply = await client.headless.run(prompt, {
-  schema?,      // JSON Schema → 结构化输出
-  model?,       // 模型 ID
-  timeoutMs?,   // 超时（默认 300000）
-})
-```
-
-### Socket
-
-```typescript
-const socket = client.socket()
-```
-
-> **Node.js 注意**：使用完毕必须 `socket.disconnect()`，否则进程不会退出。
+所有时间字段使用 ISO 8601 格式：`2026-01-01T00:00:00Z`
