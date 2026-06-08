@@ -3,6 +3,184 @@
 基础路径：`/api`  
 认证：`Authorization: Bearer sk-blade-v2-...`
 
+## 接口总览
+
+> 重要程度：🔴 核心（必须对接） · 🟡 常用 · ⚪ 可选
+
+### 会话（Sessions） — 最核心的资源
+
+| 接口 | 说明 | 重要程度 |
+|------|------|----------|
+| [POST `/api/sessions`](#post-apisessions) | 创建会话 | 🔴 核心 |
+| [GET `/api/sessions`](#get-apisessions) | 列出会话 | 🔴 核心 |
+| [GET `/api/sessions/{id}`](#get-apisessionssession_id) | 获取会话详情 | 🔴 核心 |
+| [DELETE `/api/sessions/{id}`](#delete-apisessionssession_id) | 删除会话 | 🟡 常用 |
+| [PATCH `/api/sessions/{id}`](#patch-apisessionssession_id) | 更新会话（标题等） | 🟡 常用 |
+| [PUT `/api/sessions/{id}/env`](#put-apisessionssession_idenv) | 更新会话环境变量 | ⚪ 可选 |
+| [PATCH `/api/sessions/{id}/pin`](#patch-apisessionssession_idpin) | 固定/取消固定会话 | ⚪ 可选 |
+
+### 聊天历史
+
+| 接口 | 说明 | 重要程度 |
+|------|------|----------|
+| [GET `/api/sessions/{id}/messages`](#get-apisessionssession_idmessages) | 获取 Turn 列表（聊天记录） | 🔴 核心 |
+| [GET `/api/sessions/{id}/history`](#get-apisessionssession_idhistory) | 获取原始历史树 | ⚪ 可选 |
+
+### 检查点 & 回退
+
+| 接口 | 说明 | 重要程度 |
+|------|------|----------|
+| [GET `/api/sessions/{id}/checkpoints`](#get-apisessionssession_idcheckpoints) | 列出检查点 | 🟡 常用 |
+| [POST `/api/sessions/{id}/rewind`](#post-apisessionssession_idrewind) | 回退到检查点 | 🟡 常用 |
+| [POST `/api/sessions/{id}/checkout`](#post-apisessionssession_idcheckout) | 查看检查点状态（不修改） | ⚪ 可选 |
+| [POST `/api/sessions/{id}/switch-branch`](#post-apisessionssession_idswitch-branch) | 切换分支 | ⚪ 可选 |
+| [POST `/api/sessions/{id}/compact`](#post-apisessionssession_idcompact) | 手动上下文压缩 | ⚪ 可选 |
+
+### 模式 & 配置
+
+| 接口 | 说明 | 重要程度 |
+|------|------|----------|
+| [PATCH `/api/sessions/{id}/sharing`](#patch-apisessionssession_idsharing) | 开启/关闭分享 | 🟡 常用 |
+| [PATCH `/api/sessions/{id}/memory`](#patch-apisessionssession_idmemory) | 开启/关闭记忆 | ⚪ 可选 |
+
+### 回放
+
+| 接口 | 说明 | 重要程度 |
+|------|------|----------|
+| [POST `/api/sessions/{id}/replay`](#post-apisessionssession_idreplay) | 创建回放会话 | ⚪ 可选 |
+| [GET `/api/sessions/{id}/replay/preview`](#get-apisessionssession_idreplaypreview) | 预览回放 | ⚪ 可选 |
+| [PATCH `/api/sessions/{id}/replay`](#patch-apisessionssession_idreplay) | 更新回放配置 | ⚪ 可选 |
+
+### 工作空间文件
+
+| 接口 | 说明 | 重要程度 |
+|------|------|----------|
+| [GET `/api/sessions/{id}/ls/{path}`](#get-apisessionssession_idlsdir_path) | 列出目录 | 🟡 常用 |
+| [GET `/api/sessions/{id}/files/{path}`](#get-apisessionssession_idfilesfile_path) | 读取文件 | 🟡 常用 |
+| [PUT `/api/sessions/{id}/files/{path}`](#put-apisessionssession_idfilesfile_path) | 写入文件 | 🟡 常用 |
+| [POST `/api/sessions/{id}/upload/{path}`](#post-apisessionssession_iduploaddir_path) | 上传文件 | 🟡 常用 |
+| [DELETE `/api/sessions/{id}/files/{path}`](#delete-apisessionssession_idfilesfile_path) | 删除文件 | ⚪ 可选 |
+| [POST `.../files/{path}/rename`](#post-apisessionssession_idfilesfile_pathrename) | 重命名文件 | ⚪ 可选 |
+| [POST `.../files/{path}/copy`](#post-apisessionssession_idfilesfile_pathcopy) | 复制文件 | ⚪ 可选 |
+| [GET `.../download-dir/{path}`](#get-apisessionssession_iddownload-dirdir_path) | 下载目录 ZIP | ⚪ 可选 |
+
+### 分享
+
+| 接口 | 说明 | 重要程度 |
+|------|------|----------|
+| [POST `/api/sessions/{id}/share`](#post-apisessionssession_idshare) | 创建分享链接 | 🟡 常用 |
+| [DELETE `/api/sessions/{id}/share/{token}`](#delete-apisessionssession_idsharetoken) | 撤销分享 | ⚪ 可选 |
+| [GET `/api/share/{token}`](#get-apisharetoken) | 获取已分享会话（公开） | 🟡 常用 |
+
+### 导入 & 导出
+
+| 接口 | 说明 | 重要程度 |
+|------|------|----------|
+| [GET `/api/sessions/{id}/export`](#get-apisessionssession_idexport) | 导出会话 ZIP | ⚪ 可选 |
+| [POST `/api/sessions/preview-import`](#post-apisessionspreview-import) | 预览导入 | ⚪ 可选 |
+| [POST `/api/sessions/import`](#post-apisessionsimport) | 导入会话 | ⚪ 可选 |
+
+### Tokenize
+
+| 接口 | 说明 | 重要程度 |
+|------|------|----------|
+| [POST `/api/sessions/tokenize/prompt`](#post-apisessionstokenizeprompt) | 计算 prompt token 数 | ⚪ 可选 |
+| [POST `/api/sessions/tokenize/messages`](#post-apisessionstokenizemessages) | 计算消息 token 数 | ⚪ 可选 |
+
+### 后台任务
+
+| 接口 | 说明 | 重要程度 |
+|------|------|----------|
+| [GET `/api/sessions/{id}/background-tasks`](#get-apisessionssession_idbackground-tasks) | 列出后台任务 | ⚪ 可选 |
+| [GET `.../background-tasks/{task_id}`](#get-apisessionssession_idbackground-taskstask_id) | 获取任务输出 | ⚪ 可选 |
+| [POST `.../background-tasks/{task_id}/stop`](#post-apisessionssession_idbackground-taskstask_idstop) | 停止任务 | ⚪ 可选 |
+
+### 会话技能
+
+| 接口 | 说明 | 重要程度 |
+|------|------|----------|
+| [GET `/api/sessions/{id}/skills`](#get-apisessionssession_idskills) | 列出会话技能 | ⚪ 可选 |
+| [POST `.../skills:upload`](#post-apisessionssession_idskillsupload) | 上传会话级技能 | 🟡 常用 |
+| [POST `.../skills/install`](#post-apisessionssession_idskillsinstall) | 安装合作伙伴技能 | ⚪ 可选 |
+| [POST `.../skills:resync`](#post-apisessionssession_idskillsresync) | 重新同步技能 | ⚪ 可选 |
+
+### Skills（全局技能）
+
+| 接口 | 说明 | 重要程度 |
+|------|------|----------|
+| [GET `/api/skills`](#get-apiskills) | 列出所有技能 | 🟡 常用 |
+| [GET `/api/skills/{skill_id}`](#get-apiskillsskill_id) | 获取技能详情 | ⚪ 可选 |
+| [GET `/api/skills/search`](#get-apiskillssearch) | 语义搜索技能 | ⚪ 可选 |
+| [GET `/api/skills/installed`](#get-apiskillsinstalled) | 已安装技能列表 | ⚪ 可选 |
+
+### Memories（记忆）
+
+| 接口 | 说明 | 重要程度 |
+|------|------|----------|
+| [POST `/api/memories`](#post-apimemories) | 创建记忆 | 🟡 常用 |
+| [GET `/api/memories`](#get-apimemories) | 列出记忆 | 🟡 常用 |
+| [GET `/api/memories/{id}`](#get-apimemoriesmemory_id) | 获取记忆 | ⚪ 可选 |
+| [PUT `/api/memories/{id}`](#put-apimemoriesmemory_id) | 更新记忆 | ⚪ 可选 |
+| [PATCH `/api/memories/{id}`](#patch-apimemoriesmemory_id) | 启用/禁用记忆 | ⚪ 可选 |
+| [DELETE `/api/memories/{id}`](#delete-apimemoriesmemory_id) | 删除记忆 | ⚪ 可选 |
+| [POST `/api/memories/batch`](#post-apimemoriesbatch) | 批量操作 | ⚪ 可选 |
+
+### Solutions（工作流模板）
+
+| 接口 | 说明 | 重要程度 |
+|------|------|----------|
+| [GET `/api/solutions`](#get-apisolutions) | 列出 Solution | 🟡 常用 |
+| [GET `.../biz-roles`](#get-apisolutionssolution_idbiz-roles) | 列出业务角色 | ⚪ 可选 |
+| [GET `.../files/{path}`](#get-apisolutionssolution_idfilesfile_path) | 获取 Solution 文件 | ⚪ 可选 |
+
+### Production Solutions（多智能体 DAG）
+
+| 接口 | 说明 | 重要程度 |
+|------|------|----------|
+| [POST `/api/prod_solution`](#post-apiprod_solution) | 创建 Prod Solution | 🟡 常用 |
+| [GET `/api/prod_solution`](#get-apiprod_solution) | 列出 | ⚪ 可选 |
+| [GET/PATCH/DELETE `.../prod_solution/{id}`](#get-apiprod_solutionprod_solution_id) | 获取/更新/删除 | ⚪ 可选 |
+| [DAG 管理接口（7 个）](#dag-管理) | DAG 的增删改查、验证、发布、回滚 | 🟡 常用 |
+| [Architecture 管理接口](#architecture-管理) | 架构管理（同 DAG 结构） | ⚪ 可选 |
+
+### Production Agents（生产智能体）
+
+| 接口 | 说明 | 重要程度 |
+|------|------|----------|
+| [POST `/api/prod_agents`](#post-apiprod_agents) | 创建生产智能体 | 🟡 常用 |
+| [POST `.../start-session`](#post-apiprod_agentsrecord_idstart-session) | 从智能体启动会话 | 🔴 核心 |
+| [GET `/api/prod_agents`](#get-apiprod_agents) | 列出 | 🟡 常用 |
+| [其他 CRUD](#get-apiprod_agentsprovider_key) | 获取/更新/删除/实例化 | ⚪ 可选 |
+
+### API Keys
+
+| 接口 | 说明 | 重要程度 |
+|------|------|----------|
+| [POST `/api/user/api-keys/`](#post-apiuserapi-keys) | 创建 API Key | 🔴 核心 |
+| [GET `/api/user/api-keys/`](#get-apiuserapi-keys) | 列出 Key | 🟡 常用 |
+| [DELETE `/api/user/api-keys/{id}`](#delete-apiuserapi-keyskey_id) | 删除 Key | 🟡 常用 |
+
+### Health & Config
+
+| 接口 | 说明 | 重要程度 |
+|------|------|----------|
+| [GET `/api/health`](#get-apihealth) | 健康检查 | 🔴 核心 |
+| [GET `/api/config`](#get-apiconfig) | 运行时配置 | ⚪ 可选 |
+| [GET `/api/config/models`](#get-apiconfigmodels) | 可用模型列表 | 🟡 常用 |
+| [GET `/api/auth/me`](#get-apiauthme) | 当前用户信息 | 🟡 常用 |
+
+### 其他
+
+| 接口 | 说明 | 重要程度 |
+|------|------|----------|
+| [Scheduled Tasks（6 个）](#scheduled-tasks) | 定时任务管理 | ⚪ 可选 |
+| [Environment](#environment) | 环境配置 | ⚪ 可选 |
+| [User Preferences](#user-preferences) | 用户偏好 | ⚪ 可选 |
+| [Admin](#admin) | 管理员操作 | ⚪ 可选 |
+| [Prod Workspaces](#prod-workspaces) | 工作空间管理 | ⚪ 可选 |
+| [Published Apps](#published-apps) | 应用发布 | ⚪ 可选 |
+| [Registry](#registry) | 注册资源 | ⚪ 可选 |
+
 ---
 
 ## Health & Configuration
