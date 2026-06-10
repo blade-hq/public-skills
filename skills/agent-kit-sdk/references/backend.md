@@ -7,6 +7,8 @@
 
 两者都需要先拿到 Bearer token，见 [auth-token.md](auth-token.md)。
 
+后端代用户发起真实任务时，通常显式使用干活模式：`mode: "executing"`。模式说明见 [work-modes.md](work-modes.md)。
+
 ---
 
 ## Node.js（`@blade-hq/agent-kit/client`）
@@ -94,7 +96,7 @@ socket.on("system:error", (p) => console.error(p.message))
 
 socket.connect()
 socket.emit("session:subscribe", { session_id })
-socket.emit("chat:send", { session_id, message: "你好" })
+socket.emit("chat:send", { session_id, message: "你好", mode: "executing" })
 ```
 
 离开时 `socket.emit("session:unsubscribe", { session_id })` 并 `socket.disconnect()`。
@@ -153,7 +155,11 @@ def extract_text(blocks) -> str:
     )
 
 final_reply = ""
-async for event in client.chat(session_id, message="用一句话介绍你自己"):
+async for event in client.chat(
+    session_id,
+    message="用一句话介绍你自己",
+    mode="executing",
+):
     if event.kind == "turn:end" and event.raw.get("role") == "assistant":
         text = extract_text(event.raw.get("blocks"))
         if text:
@@ -183,6 +189,26 @@ data = await client.headless.run(
 ```
 
 `headless.run(prompt, *, schema=None, model=None, timeout_secs=300.0)`。schema 也可以传一个有 `model_json_schema()` 的 Pydantic 模型类。
+
+如果 headless 任务必须直接调用工具、读取工作区文件或处理上传文件，可不用 `headless.run` 快捷入口，改用底层 `client.chat(..., headless=True, output_schema=..., mode="executing")`：
+
+```python
+schema = {
+    "type": "object",
+    "properties": {"summary": {"type": "string"}},
+    "required": ["summary"],
+}
+
+async for event in client.chat(
+    session_id,
+    message="请读取工作区里的 report.md，并返回摘要",
+    headless=True,
+    output_schema=schema,
+    mode="executing",
+):
+    if event.kind == "chat:end":
+        print(event.result)
+```
 
 ### 事件类型导入
 

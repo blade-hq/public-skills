@@ -94,9 +94,9 @@ Vue 不能直接使用 `ChatView`，因为它是 React 组件。Vue 应用使用
 2. 创建或选择 session。
 3. 建立 socket 并 `session:subscribe`。
 4. 监听 `turn:start` / `turn:patch` / `turn:end` 更新 Vue state。
-5. 发送时 emit `chat:send`。
+5. 发送时 emit `chat:send`，业务任务显式传 `mode: "executing"`。
 
-无附件时，`chat:send.message` 使用纯字符串。
+无附件时，`chat:send.message` 使用纯字符串。只做方案、不执行工具时才传 `mode: "planning"`。
 
 ### 推荐：用 getSessionTurns 取回复，避免手动拼 patch
 
@@ -127,7 +127,7 @@ socket.on("chat:end", async () => {
 })
 socket.connect()
 socket.emit("session:subscribe", { session_id })
-socket.emit("chat:send", { session_id, message: "你好" })
+socket.emit("chat:send", { session_id, message: "你好", mode: "executing" })
 ```
 
 只要最终结果时这种最稳；需要逐字流式动画时，再叠加解析 `turn:patch` 的增量。

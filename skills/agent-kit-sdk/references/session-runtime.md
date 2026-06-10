@@ -63,8 +63,10 @@ useSessionStore.getState().setActiveSession(session_id)
 const socket = client.socket()
 socket.connect()
 socket.emit("session:subscribe", { session_id: sessionId })
-socket.emit("chat:send", { session_id: sessionId, message: "你好" })
+socket.emit("chat:send", { session_id: sessionId, message: "你好", mode: "executing" })
 ```
+
+`mode` 可选值只有 `"executing"` 和 `"planning"`。真实业务任务、文件处理、工具调用默认用 `"executing"`；只要计划不执行时用 `"planning"`。详见 [work-modes.md](work-modes.md)。
 
 监听事件：
 

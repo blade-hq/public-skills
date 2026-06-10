@@ -63,6 +63,8 @@ socket.emit("chat:send", {
 })
 ```
 
+普通业务消息显式传 `mode: "executing"`。回答已有 AskUserQuestion 时不要强制传 `mode`，让回答沿用当前会话/turn 模式；只做方案、不执行工具时才传 `mode: "planning"`。
+
 ### 子智能体
 
 子 turn 的 `parent_fork_tool_call_id` 指向父 turn 的 Agent 工具调用 ID，用它过滤和嵌套渲染。
