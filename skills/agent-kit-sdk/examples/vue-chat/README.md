@@ -55,7 +55,6 @@ BladeClient.socket()
 socket.emit("chat:send", {
   session_id,
   message: "用户的回答如下：\n- 问题 -> 选项",
-  mode: "executing",
   askuser_answer: {
     tool_call_id: "tc_xxx",
     selections: { 0: [1] },
@@ -64,7 +63,7 @@ socket.emit("chat:send", {
 })
 ```
 
-普通业务消息也显式传 `mode: "executing"`。只做方案、不执行工具时才传 `mode: "planning"`。
+普通业务消息显式传 `mode: "executing"`。回答已有 AskUserQuestion 时不要强制传 `mode`，让回答沿用当前会话/turn 模式；只做方案、不执行工具时才传 `mode: "planning"`。
 
 ### 子智能体
 

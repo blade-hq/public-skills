@@ -124,7 +124,8 @@ export function useBladeChat(client: BladeClient) {
   function send(message: string, askuserAnswer?: { tool_call_id: string } & AskUserAnswerData) {
     if (!socket || !sessionId.value) return
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const payload: any = { session_id: sessionId.value, message, mode: "executing" }
+    const payload: any = { session_id: sessionId.value, message }
+    if (!askuserAnswer) payload.mode = "executing"
     if (askuserAnswer) payload.askuser_answer = askuserAnswer
     socket.emit("chat:send", payload)
     streaming.value = true
