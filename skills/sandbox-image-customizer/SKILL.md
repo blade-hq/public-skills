@@ -17,14 +17,17 @@ description: >
 开始前必须确认以下信息：
 
 ```bash
-# 1. 读取当前使用的镜像名
-grep SANDBOX_IMAGE /home/ai/codes/blade-agent/.env
+# 1. 读取当前使用的镜像名（从 blade-agent 的 .env 中获取）
+grep '^SANDBOX_IMAGE=' /home/ai/codes/blade-agent/.env
 
 # 2. 查看本地已有的 sandbox 镜像
 docker images | grep sandbox
 ```
 
 将读取到的镜像全名（含 registry 和 tag）记为 `$SANDBOX_IMAGE`。
+
+> **当前环境**：`SANDBOX_IMAGE=192.168.130.23:5000/bladeai/blade-sandbox:v0.0.9`（私有 registry）。
+> 镜像名包含端口号（`5000`），`${SANDBOX_IMAGE%:*}` 能正确截取到 tag 前的部分。
 
 ## 步骤 1：备份当前镜像
 
