@@ -85,6 +85,7 @@ imported_skills:
 - `role.yaml.id` 必须与目录名、`solution.yaml.roles` 条目一致。
 - `role.layout_type` 覆盖 `solution.layout_type`；有效 layout 会写入 session setup snapshot。
 - `role.initial_mode` 和 `role.initial_message` 覆盖 solution 默认值。
+- `initial_mode` 只有 `planning` 和 `executing`。面向最终用户直接完成任务的业务角色用 `executing`；只做方案拆解、评审或确认前计划的角色用 `planning`。
 - `role.local_skills` 只引用当前 Solution 包内的 `solution/skills/<skill_id>/`。
 - `role.imported_skills` 引用 Skill Registry 中的全局 skill。
 - v3 禁止 `roles/<biz_role_id>/skills/`；共享 skill 必须放在 solution 级 `skills/` 下。

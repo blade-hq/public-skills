@@ -48,7 +48,7 @@
 {
   "session_id": "sess_xxx",
   "message": "你好",
-  "mode": null,
+  "mode": "executing",
   "askuser_answer": null,
   "model": null,
   "headless": false,
@@ -63,7 +63,7 @@
 |------|------|------|------|
 | `session_id` | string | 是 | 会话 ID |
 | `message` | string 或 array | 是 | 消息内容（见下方格式） |
-| `mode` | string? | 否 | `"planning"` 或 `"executing"`，覆盖当前模式 |
+| `mode` | string? | 否 | `"planning"` 或 `"executing"`，覆盖当前模式；业务任务、工具调用和文件处理推荐显式传 `"executing"` |
 | `askuser_answer` | object? | 否 | 回答 AskUserQuestion（见 [Chat 流程](./Chat流程.md)） |
 | `model` | string? | 否 | 覆盖模型 |
 | `headless` | bool | 否 | 无头模式，默认 `false` |
