@@ -212,22 +212,33 @@ app.post("/api/sessions/:session_id/chat", async (req, res) => {
     socket.emit("session:unsubscribe", { session_id })
     socket.disconnect()
   }
+  const finish = () => {
+    cleanup()
+    if (!res.writableEnded) {
+      res.end()
+    }
+  }
 
   res.on("close", cleanup)
   socket.on("connect", () => {
     socket.emit("session:subscribe", { session_id })
     socket.emit("chat:send", { session_id, message, mode: "executing" })
   })
-  socket.on("connect_error", (err) => send("error", { message: err.message }))
+  socket.on("connect_error", (err) => {
+    send("error", { message: err.message })
+    finish()
+  })
   socket.on("turn:start", (p) => send("turn:start", p))
   socket.on("turn:patch", (p) => send("turn:patch", p))
   socket.on("turn:end", (p) => send("turn:end", p))
   socket.on("chat:end", (p) => {
     send("chat:end", p)
-    cleanup()
-    res.end()
+    finish()
   })
-  socket.on("system:error", (p) => send("error", p))
+  socket.on("system:error", (p) => {
+    send("error", p)
+    finish()
+  })
   socket.connect()
 })
 ```
