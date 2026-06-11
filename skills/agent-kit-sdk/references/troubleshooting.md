@@ -78,6 +78,58 @@ useSessionStore.getState().setActiveSession(sessionId)
 - `client.skills.listSessionSkills(sessionId)` 是否能看到新 skill。
 - `client.skills.getSkillStats(sessionId)` 里的 loaded skill 是否包含目标 skill。
 
+## 上传普通文件后 Agent 找不到文件
+
+普通业务文件上传见 [file-upload.md](file-upload.md)，不要使用 session skill 上传接口。
+
+排查：
+
+- 上传接口返回的 `uploaded` 是否包含目标文件路径。
+- `failed` 是否为空；非空时不要继续发送分析任务。
+- 发送给 Agent 的消息里是否写了同一个 workspace 相对路径，例如 `uploads/report.md`。
+- 发送分析任务时是否显式传 `mode: "executing"`。
+- `dir_path` 和 `remote_path` 是否组合出了预期路径；例如 `dir_path="uploads"`、`remote_path="report.md"` 后，消息里应写 `uploads/report.md`。
+- Node.js 直接调用 REST 上传时，是否使用 `multipart/form-data` 的 `files` 字段，并把 `paths` 写成 JSON 字符串数组。
+- Node.js 不要手动设置 `Content-Type`，否则 multipart boundary 可能丢失。
+
+## Express 后端 JSON 请求体是 undefined
+
+常见原因：
+
+- 注册路由前没有调用 `app.use(express.json())`。
+- 客户端没有发送 `Content-Type: application/json`。
+- 文件上传接口和 JSON 接口混用了同一个解析中间件。
+
+修复：
+
+```ts
+const app = express()
+app.use(express.json())
+
+app.post("/api/sessions", async (req, res) => {
+  const intent = req.body.intent ?? "用户任务"
+  // ...
+})
+```
+
+文件上传接口单独使用 multipart 中间件，不要依赖 `express.json()` 读取文件内容。
+
+## 后端 SSE 接口连接后一直超时
+
+常见原因：
+
+- 服务端建立上游 socket 后，没有立即向浏览器写出任何 SSE 数据。
+- 没有监听 `connect_error` / `system:error`，上游失败时客户端只能等待超时。
+- 没有 heartbeat，代理或客户端可能认为连接空闲。
+- 收到 `chat:end` 后没有结束响应或清理 socket。
+
+修复：
+
+- `res.writeHead(200, { "Content-Type": "text/event-stream", ... })` 后立刻写出 `connected` 事件。
+- 至少转发 `turn:start`、`turn:patch`、`turn:end`、`chat:end`、`system:error`。
+- 用 `setInterval` 发送 heartbeat，并在 `res.close`、`chat:end`、错误路径中清理。
+- E2E 测试必须读取 SSE，直到收到 `chat:end` 且 `status` 为 `completed`。
+
 ## 地图或宿主业务 UI 没有响应工具结果
 
 排查：
