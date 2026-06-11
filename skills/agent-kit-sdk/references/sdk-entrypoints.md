@@ -83,6 +83,8 @@ await client.skills.uploadSessionSkill(sessionId, payload)
 await client.skills.getSkillStats(sessionId)
 ```
 
+普通业务文件上传到 session workspace 见 `file-upload.md`。Python SDK 有 `upload_file()`；Node.js 可直接调用公开 REST 上传接口。
+
 底层 socket：
 
 ```ts

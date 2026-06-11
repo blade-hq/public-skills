@@ -2,6 +2,8 @@
 
 本文说明如何把一组 skill 文件临时上传到指定 session，让 Agent 在这个 session 中调用宿主提供的业务能力。
 
+如果你只是要上传 Markdown、文本、CSV、PDF 等普通业务文件，让 Agent 读取分析，请读 [file-upload.md](file-upload.md)。不要用 session skill 上传普通业务文件。
+
 它不走 skill registry，也不是全局安装。上传后的 skill 只属于当前 session。
 
 上传的 session skill 通常包含：
