@@ -1,25 +1,65 @@
 # 后端集成（Node.js / Python）
 
-后端场景不渲染 UI，只通过网络调用 Blade Agent：建会话、发消息拿结果、读历史、上传 session skill。两套后端 SDK：
+后端场景不渲染 UI，只通过网络调用 Blade Agent：建会话、上传普通业务文件、发消息拿结果、读历史、上传 session skill。两套后端 SDK：
 
 - **Node.js**：`@blade-hq/agent-kit/client`（纯 client，不依赖 React）。
 - **Python**：`blade-agent-kit`（异步 REST + Socket.IO client）。
+
+Node.js 后端默认使用 `@blade-hq/agent-kit@0.5.11` 和 `@blade-hq/agent-kit/client`。`docs/rest-api.md`、`docs/websocket-api.md` 是底层协议参考，只用于查证公开 endpoint 和事件；除非用户明确要求“不使用 SDK，直接协议接入”，否则不要用裸 `axios`/`fetch` + `socket.io-client` 代替 Node SDK。
 
 两者都需要先拿到 Bearer token，见 [auth-token.md](auth-token.md)。
 
 后端代用户发起真实任务时，通常显式使用干活模式：`mode: "executing"`。模式说明见 [work-modes.md](work-modes.md)。
 
+如果后端要接收用户上传的 Markdown、文本、CSV 等业务文件，并让 Agent 读取分析，先读 [file-upload.md](file-upload.md)。普通文件上传和 session skill 上传不同，不要用 `uploadSessionSkill()` 上传业务文档。
+
+后端集成不要臆造 `/api/v1/*`、workspace JSON 上传或 task polling API。公开后端链路固定为：
+
+1. 创建 session：优先用 `client.sessions.createSession(...)`；直接 REST 时是 `POST /api/sessions`。
+2. 上传普通文件：Node SDK 优先用 `client.sessions.uploadFiles(session_id, ".", files)`；直接 REST 时是 `POST /api/sessions/{session_id}/upload/{dir_path}`，multipart 字段是 `files` 和 `paths`。
+3. 发送业务任务：用 Socket.IO `chat:send`，传 `{ session_id, message, mode: "executing" }`。
+4. 监听流式结果：`turn:start`、`turn:patch`、`turn:end`、`chat:end`、`system:error`。
+
+不要使用这些未公开路径或方法：
+
+- `POST /api/v1/sessions`
+- `POST /api/v1/sessions/{id}/workspace`
+- `POST /api/v1/sessions/{id}/tasks`
+- `GET /api/v1/sessions/{id}/tasks/{task_id}`
+- `POST /api/sessions/{id}/workspace`
+- `POST /api/sessions/{id}/tasks`
+- `GET /api/tasks/{task_id}`
+- `POST /api/tasks/{task_id}/stream`
+- 把普通文件用 JSON `{ files: [...] }` 写进 workspace
+- 创建 task 后轮询 task status 来代替 Socket.IO `chat:send`
+- 用 `axios` 直接调用臆造的 Blade session/task/workspace API 来替代 `BladeClient`
+- 用 `axios`/`fetch` + 裸 `socket.io-client` 作为 Node 后端默认实现，绕过 `@blade-hq/agent-kit/client`
+- `DOCS_AUDIT.md` 把 SDK 包入口写成“无特定 SDK”
+- `require("@blade-hq/agent-kit")` 或从包根导入；Node 后端必须从 `@blade-hq/agent-kit/client` 导入
+- `import { createClient } from "@blade-hq/agent-kit/client"`；Node 后端创建 client 必须用 `new BladeClient({ baseUrl, token })`
+- `client.uploadFile(...)`；Node SDK 的普通文件上传方法是 `client.sessions.uploadFiles(...)`
+- `client.workspaces.uploadFile(...)`；Node SDK 的普通文件上传方法是 `client.sessions.uploadFiles(...)`
+
 ---
 
 ## Node.js（`@blade-hq/agent-kit/client`）
 
+Node.js 新后端建议先复制 [backend-quickstart.md](backend-quickstart.md) 的 Express 模板，再按本页扩展。
+
 ### 安装
 
 ```bash
-npm install @blade-hq/agent-kit
+npm install @blade-hq/agent-kit@0.5.11
 ```
 
 只用 `/client` 时不需要 React、不需要导入样式。包是 ESM，脚本用 `.mjs` 或在 `package.json` 设 `"type": "module"`。
+
+不要写 CommonJS：
+
+```js
+// 错误：0.5.11 没有包根 CommonJS exports，Node 22 会报 ERR_PACKAGE_PATH_NOT_EXPORTED
+const { BladeClient } = require("@blade-hq/agent-kit")
+```
 
 ### 创建 client
 
@@ -30,6 +70,34 @@ const client = new BladeClient({
   baseUrl: process.env.BLADE_AGENT_URL, // 后端 origin，不带 pathname
   token: process.env.BLADE_AGENT_TOKEN, // sk-blade-v2-...
 })
+```
+
+不要写：
+
+```ts
+// 错误：0.5.11 Node client 没有 createClient 入口
+import { createClient } from "@blade-hq/agent-kit/client"
+const client = createClient({ baseUrl, token })
+```
+
+### 公开后端链路速查
+
+如果你在写 Express/Fastify/Koa 包装层，业务 API 可以自定义，但调用 Blade Agent 时只使用下面这些公开入口：
+
+```ts
+const client = new BladeClient({ baseUrl, token })
+const { session_id } = await client.sessions.createSession("文档分析")
+
+// 普通文件上传走 SDK uploadFiles；不是 /api/v1，也不是 JSON workspace 写入
+await client.sessions.uploadFiles(session_id, ".", [
+  { file: new File([buffer], "report.md"), name: "report.md" },
+])
+
+// 执行业务任务走 Socket.IO chat:send，不是 task polling
+const socket = client.socket()
+socket.connect()
+socket.emit("session:subscribe", { session_id })
+socket.emit("chat:send", { session_id, message, mode: "executing" })
 ```
 
 ### 一次性问答（headless，最简单）
@@ -101,6 +169,136 @@ socket.emit("chat:send", { session_id, message: "你好", mode: "executing" })
 
 离开时 `socket.emit("session:unsubscribe", { session_id })` 并 `socket.disconnect()`。
 
+### 上传普通文件后执行分析
+
+Node.js 后端可用公开 REST 接口把普通文件上传到 session workspace，再用 socket 发送 `mode: "executing"` 的业务任务。完整上传说明见 [file-upload.md](file-upload.md)。
+
+```ts
+import { readFile } from "node:fs/promises"
+import { basename } from "node:path"
+import { BladeClient } from "@blade-hq/agent-kit/client"
+
+const baseUrl = process.env.BLADE_AGENT_URL!
+const token = process.env.BLADE_AGENT_TOKEN!
+const client = new BladeClient({ baseUrl, token })
+const { session_id } = await client.sessions.createSession("文档分析")
+
+const localPath = "q2-launch-notes.md"
+const remotePath = basename(localPath)
+const uploadResult = await client.sessions.uploadFiles(session_id, ".", [
+  { file: new File([await readFile(localPath)], remotePath), name: remotePath },
+])
+if (uploadResult.failed?.length) {
+  throw new Error(`上传失败: ${JSON.stringify(uploadResult)}`)
+}
+
+const socket = client.socket()
+socket.on("chat:end", (p) => {
+  console.log("done", p.status)
+  socket.disconnect()
+})
+socket.on("system:error", (p) => {
+  console.error(p.message)
+  socket.disconnect()
+})
+
+socket.connect()
+socket.emit("session:subscribe", { session_id })
+socket.emit("chat:send", {
+  session_id,
+  message: `请读取工作区里的 ${remotePath}，提取标题、owner、category、二级标题和风险列表。`,
+  mode: "executing",
+})
+```
+
+### Express API 包装层最小检查
+
+如果用 Express 把 Blade 能力包装成业务 API，先满足这些最小要求，再写上传和聊天逻辑：
+
+- JSON API 前必须注册 `app.use(express.json())`；否则 `POST` 请求的 `req.body` 会是 `undefined`。
+- 文件上传接口使用 `multer`、`busboy` 或同类 multipart 中间件；不要用 `express.json()` 解析文件。
+- SSE 接口要立即写出一个事件，避免客户端等不到 headers/body 超时。
+- SSE 接口要设置 heartbeat，并在上游 socket 错误、`chat:end`、浏览器断开时清理 socket。
+- 端到端测试不要只检查 HTTP 200；必须确认收到 `chat:end`，且 `status` 是 `completed`。
+
+Express SSE 包装层示例：
+
+```ts
+import express from "express"
+import { BladeClient } from "@blade-hq/agent-kit/client"
+
+const app = express()
+app.use(express.json())
+
+app.post("/api/sessions", async (req, res, next) => {
+  try {
+    const client = new BladeClient({
+      baseUrl: process.env.BLADE_AGENT_URL!,
+      token: process.env.BLADE_AGENT_TOKEN!,
+    })
+    const created = await client.sessions.createSession(req.body.intent ?? "用户任务")
+    res.json(created)
+  } catch (err) {
+    next(err)
+  }
+})
+
+app.post("/api/sessions/:session_id/chat", async (req, res) => {
+  const { session_id } = req.params
+  const { message } = req.body
+  const client = new BladeClient({
+    baseUrl: process.env.BLADE_AGENT_URL!,
+    token: process.env.BLADE_AGENT_TOKEN!,
+  })
+  const socket = client.socket()
+
+  res.writeHead(200, {
+    "Content-Type": "text/event-stream",
+    "Cache-Control": "no-cache, no-transform",
+    Connection: "keep-alive",
+  })
+  res.write(`event: connected\ndata: {"ok":true}\n\n`)
+
+  const send = (event: string, data: unknown) => {
+    res.write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`)
+  }
+  const heartbeat = setInterval(() => send("heartbeat", { ts: Date.now() }), 15000)
+  const cleanup = () => {
+    clearInterval(heartbeat)
+    socket.emit("session:unsubscribe", { session_id })
+    socket.disconnect()
+  }
+  const finish = () => {
+    cleanup()
+    if (!res.writableEnded) {
+      res.end()
+    }
+  }
+
+  res.on("close", cleanup)
+  socket.on("connect", () => {
+    socket.emit("session:subscribe", { session_id })
+    socket.emit("chat:send", { session_id, message, mode: "executing" })
+  })
+  socket.on("connect_error", (err) => {
+    send("error", { message: err.message })
+    finish()
+  })
+  socket.on("turn:start", (p) => send("turn:start", p))
+  socket.on("turn:patch", (p) => send("turn:patch", p))
+  socket.on("turn:end", (p) => send("turn:end", p))
+  socket.on("chat:end", (p) => {
+    send("chat:end", p)
+    finish()
+  })
+  socket.on("system:error", (p) => {
+    send("error", p)
+    finish()
+  })
+  socket.connect()
+})
+```
+
 ---
 
 ## Python（`blade-agent-kit`）
@@ -138,6 +336,34 @@ history = await client.get_history(session_id)
 files = await client.list_dir(session_id, ".") # 工作区目录
 checkpoints = await client.get_checkpoints(session_id)
 await client.delete_session(session_id)
+```
+
+### 上传普通文件后执行分析
+
+Python SDK 可直接使用 `upload_file()`。完整说明见 [file-upload.md](file-upload.md)。
+
+```python
+from pathlib import Path
+
+created = await client.create_session(intent="文档分析")
+session_id = created.id
+
+upload_result = await client.upload_file(
+    session_id,
+    Path("q2-launch-notes.md"),
+    dir_path=".",
+    remote_path="q2-launch-notes.md",
+)
+if upload_result.get("failed"):
+    raise RuntimeError(f"上传失败: {upload_result['failed']}")
+
+async for event in client.chat(
+    session_id,
+    message="请读取工作区里的 q2-launch-notes.md，提取标题、owner、category、二级标题和风险列表。",
+    mode="executing",
+):
+    if event.kind == "chat:end":
+        print(event.status)
 ```
 
 ### 流式对话（chat 迭代器）
@@ -223,4 +449,3 @@ from blade_agent_kit import TurnStart, TurnPatch, TurnEnd, ChatEnd, SystemError
 - 只要最终结果（问答、抽取、批处理）：用 **headless**，最少代码。
 - 要展示中间过程、工具调用、逐字输出：用 **流式 socket / chat 迭代器**。
 - 把对话 UI 交给浏览器、后端只做编排：后端用 REST + headless，实时流由前端 `@blade-hq/agent-kit` 负责。
-</content>

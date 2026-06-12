@@ -85,5 +85,3 @@ client = BladeAgentClient(
 - **REST 通但 Socket 不连**：REST 和 Socket.IO 共用同一个 token。确认 token 同时注入了两者（用同一个 `BladeClient` 即可），换 token 后要重连 socket。
 - **401**：token 过期、被吊销，或根本没创建过。回到上面的创建流程重新拿一个 API key。
 - **本地 mock 环境**：本地以 mock 模式启动后端时，浏览器访问 `/api/auth/login` 会直接签发登录态，之后即可按上面的流程创建 API key。
-</content>
-</invoke>
