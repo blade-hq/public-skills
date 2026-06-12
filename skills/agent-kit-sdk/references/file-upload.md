@@ -82,15 +82,87 @@ await client.upload_file(
 # Agent 可读取 uploads/report.md
 ```
 
+## Node.js SDK
+
+Node.js 后端使用 `@blade-hq/agent-kit@0.5.11` 时，普通文件上传优先用 client SDK：
+
+```ts
+import { readFile } from "node:fs/promises"
+import { basename } from "node:path"
+import { BladeClient } from "@blade-hq/agent-kit/client"
+
+const client = new BladeClient({
+  baseUrl: process.env.BLADE_AGENT_URL!,
+  token: process.env.BLADE_AGENT_TOKEN!,
+})
+
+const { session_id } = await client.sessions.createSession("文档分析")
+const localPath = "q2-launch-notes.md"
+const remotePath = basename(localPath)
+
+const result = await client.sessions.uploadFiles(session_id, ".", [
+  { file: new File([await readFile(localPath)], remotePath), name: remotePath },
+])
+
+if (result.failed?.length) {
+  throw new Error(`文件上传失败: ${JSON.stringify(result.failed)}`)
+}
+```
+
+Express + multer 代理上传：
+
+```ts
+import express from "express"
+import multer from "multer"
+import { BladeClient } from "@blade-hq/agent-kit/client"
+
+const app = express()
+const upload = multer({ storage: multer.memoryStorage() })
+
+app.post("/api/upload", upload.single("file"), async (req, res, next) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: "missing file" })
+    }
+
+    const client = new BladeClient({
+      baseUrl: process.env.BLADE_AGENT_URL!,
+      token: process.env.BLADE_AGENT_TOKEN!,
+    })
+    const { sessionId, remotePath = req.file.originalname } = req.body
+
+    const result = await client.sessions.uploadFiles(sessionId, ".", [
+      {
+        file: new File([req.file.buffer], req.file.originalname, {
+          type: req.file.mimetype || "application/octet-stream",
+        }),
+        name: remotePath,
+      },
+    ])
+
+    if (result.failed?.length) {
+      return res.status(502).json({ error: "upload failed", detail: result })
+    }
+    res.json(result)
+  } catch (err) {
+    next(err)
+  }
+})
+```
+
+不要使用 `client.uploadFile(...)` 或 `client.workspaces.uploadFile(...)`；0.5.11 的 Node client 没有这些普通文件上传方法。不要从包根导入 SDK；Node 后端必须使用 `@blade-hq/agent-kit/client` 和 `client.sessions.uploadFiles(...)`。
+
 ## Node.js / REST
 
-当前 Node.js client 主要覆盖 session、chat、history、skill 等高频接口。普通文件上传可以直接调用公开 REST 接口：
+如果不用 SDK 上传，可以直接调用公开 REST 接口：
 
 ```http
 POST /api/sessions/{session_id}/upload/{dir_path}
 Content-Type: multipart/form-data
 Authorization: Bearer sk-blade-v2-...
 ```
+
+不要使用 `/api/v1/sessions/{session_id}/workspace`，也不要把文件内容包装成 JSON `{ files: [...] }` 上传。普通文件上传必须是 multipart。
 
 FormData 字段：
 
@@ -149,7 +221,7 @@ async function uploadWorkspaceFile(options: {
 }
 ```
 
-Express + multer 代理上传：
+Express + multer 直接 REST 代理上传：
 
 ```ts
 app.post("/api/upload", upload.single("file"), async (req, res) => {
@@ -209,5 +281,7 @@ socket.emit("chat:send", {
 - **Agent 说找不到文件**：确认上传返回的 `uploaded` 路径，并在消息里使用完全相同的 workspace 相对路径。
 - **上传成功但 Agent 不执行读取**：发送处理请求时显式传 `mode: "executing"`。
 - **把文件上传成 session skill**：普通业务文件不要用 `client.skills.uploadSessionSkill()`；那只适用于上传工具包。
+- **Node 报 `client.uploadFile is not a function`**：改用 `client.sessions.uploadFiles(session_id, ".", files)`。
+- **Node 报 `client.workspaces` 是 undefined**：0.5.11 普通文件上传不在 `client.workspaces` 下，改用 `client.sessions.uploadFiles(session_id, ".", files)`。
 - **多文件上传路径错乱**：`paths` 数组长度和 `files` 数量要一致，顺序也要一致。
 - **鉴权失败**：后端上传 REST 请求同样需要 `Authorization: Bearer ...`。
