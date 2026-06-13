@@ -24,9 +24,23 @@ export default defineConfig({
     sidebar: {
       "/skills/agent-kit-sdk/": [
         {
-          text: "API 协议",
+          text: "快速开始",
           items: [
             { text: "概览", link: "/skills/agent-kit-sdk/docs/" },
+            {
+              text: "React 快速接入",
+              link: "/skills/agent-kit-sdk/references/react-quickstart",
+            },
+            {
+              text: "后端快速接入",
+              link: "/skills/agent-kit-sdk/references/backend-quickstart",
+            },
+          ],
+        },
+        {
+          text: "API 协议（中文）",
+          collapsed: true,
+          items: [
             { text: "API 概览", link: "/skills/agent-kit-sdk/docs/API概览" },
             { text: "REST 接口", link: "/skills/agent-kit-sdk/docs/REST接口" },
             {
@@ -39,6 +53,36 @@ export default defineConfig({
               link: "/skills/agent-kit-sdk/docs/会话生命周期",
             },
             { text: "Chat 流程", link: "/skills/agent-kit-sdk/docs/Chat流程" },
+          ],
+        },
+        {
+          text: "API Protocol (English)",
+          collapsed: true,
+          items: [
+            {
+              text: "API Overview",
+              link: "/skills/agent-kit-sdk/docs/api-overview",
+            },
+            {
+              text: "REST API",
+              link: "/skills/agent-kit-sdk/docs/rest-api",
+            },
+            {
+              text: "WebSocket API",
+              link: "/skills/agent-kit-sdk/docs/websocket-api",
+            },
+            {
+              text: "Core Types",
+              link: "/skills/agent-kit-sdk/docs/core-types",
+            },
+            {
+              text: "Session Lifecycle",
+              link: "/skills/agent-kit-sdk/docs/session-lifecycle",
+            },
+            {
+              text: "Chat Flow",
+              link: "/skills/agent-kit-sdk/docs/chat-flow",
+            },
           ],
         },
         {
@@ -92,6 +136,7 @@ export default defineConfig({
         },
         {
           text: "AI Skill 导航",
+          collapsed: true,
           items: [
             {
               text: "SKILL.md（AI 路由）",
