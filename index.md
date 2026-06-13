@@ -14,19 +14,27 @@ hero:
 <div class="card-grid">
 <a class="card" href="/public-skills/guide/getting-started.html">
 <h3>快速开始</h3>
-<p>注册登录、桌面操作、和智能体对话</p>
+<p>注册登录、进入桌面、发起第一次对话</p>
 </a>
 <a class="card" href="/public-skills/guide/blade-os.html">
 <h3>Blade OS 桌面</h3>
 <p>桌面布局、窗口操作、内置应用</p>
 </a>
 <a class="card" href="/public-skills/guide/chat.html">
-<h3>和智能体对话</h3>
-<p>发送消息、上传文件、工作模式</p>
+<h3>智能助手</h3>
+<p>对话、语音、文件上传、会话管理、记忆、定时任务</p>
 </a>
 <a class="card" href="/public-skills/guide/solutions-and-roles.html">
 <h3>解决方案与角色</h3>
 <p>了解解决方案、角色、如何切换</p>
+</a>
+<a class="card" href="/public-skills/guide/cloud-computer.html">
+<h3>云电脑</h3>
+<p>持久化沙箱环境，文件和软件跨会话保留</p>
+</a>
+<a class="card" href="/public-skills/guide/factory.html">
+<h3>软件工厂</h3>
+<p>从创建项目到发布应用的完整开发工作台</p>
 </a>
 </div>
 </div>
@@ -41,10 +49,6 @@ hero:
 <a class="card" href="/public-skills/integration/concepts.html">
 <h3>应用接入</h3>
 <p>通过 SDK 或 API 将智能助手嵌入你的系统</p>
-</a>
-<a class="card" href="/public-skills/api/overview.html">
-<h3>API 参考</h3>
-<p>REST 接口、WebSocket 协议、核心类型定义</p>
 </a>
 </div>
 </div>
@@ -67,6 +71,14 @@ hero:
 <a class="card" href="/public-skills/ops/env.html">
 <h3>环境变量参考</h3>
 <p>全部环境变量说明</p>
+</a>
+<a class="card" href="/public-skills/ops/oauth.html">
+<h3>Blade OAuth</h3>
+<p>认证服务配置、SSO 对接、默认账号</p>
+</a>
+<a class="card" href="/public-skills/ops/monitoring.html">
+<h3>监控与观测</h3>
+<p>Prometheus、Grafana、LLM 请求观测</p>
 </a>
 </div>
 </div>

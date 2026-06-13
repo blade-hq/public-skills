@@ -1,43 +1,37 @@
-# 鉴权与 Token
+# 鉴权
 
 SDK 的所有请求（REST 和 Socket.IO）都用同一个 Bearer Token 鉴权。
 
-## Token 类型
-
-| 类型 | 格式 | 有效期 | 用途 |
-| --- | --- | --- | --- |
-| API Key | `sk-blade-v2-...` | 长期有效，可吊销 | 后端服务、脚本、Vue/Node 应用 |
-| Session JWT | 浏览器 cookie | 短期 | 已登录 Blade Agent 网页的同源前端 |
-
-第三方集成优先使用 API Key。
-
 ## 创建 API Key
 
-### 方式一：网页端创建
+登录 Blade Agent Web UI（`http://<host>:8020`）-> 账号/设置 -> 创建 API Key -> 复制 `sk-blade-v2-...` 格式的密钥。
 
-登录 Blade Agent 网页 -> 账号/设置 -> 创建 API Key -> 复制 `sk-blade-v2-...`。
+```
+┌─────────────────────────────────────────────┐
+│  Blade Agent - 账号设置                       │
+│                                             │
+│  API Keys                                   │
+│  ┌─────────────────────────────────────────┐ │
+│  │ 名称           密钥              操作    │ │
+│  │ my-backend     sk-blade-v2-***   [删除]  │ │
+│  │                                         │ │
+│  │              [+ 创建 API Key]            │ │
+│  └─────────────────────────────────────────┘ │
+└─────────────────────────────────────────────┘
+```
 
-### 方式二：前端 SDK 创建
-
-用户已登录（带 cookie）时，可用 SDK 创建：
+也可以用前端 SDK 创建（用户已登录、浏览器带 cookie 时）：
 
 ```ts
 import { BladeClient } from "@blade-hq/agent-kit/client"
 
-// 同源、已登录：浏览器自动带上 cookie
-const client = new BladeClient({ baseUrl: "https://blade.example.com" })
-
+const client = new BladeClient({ baseUrl: "http://<host>:8020" })
 const { plaintext } = await client.apiKeys.createApiKey("my-backend")
 // plaintext 形如 "sk-blade-v2-..."，交给后端保存
 ```
 
-`client.apiKeys` 还提供：
-- `listApiKeys()` - 列出所有 key
-- `renameApiKey(id, name)` - 重命名
-- `deleteApiKey(id)` - 删除
-
 ::: warning
-明文 key 只在创建响应里返回，请妥善保存。Python SDK 不负责创建 API Key，只消费已有的 key。
+明文 key 只在创建响应里返回，请妥善保存。
 :::
 
 ## SDK 中注入 Token
@@ -50,7 +44,7 @@ Token 在构造 client 时注入，不要在单次方法调用里临时传。
 import { BladeClient } from "@blade-hq/agent-kit/client"
 
 const client = new BladeClient({
-  baseUrl: "https://blade.example.com",
+  baseUrl: "http://<host>:8020",
   token: "sk-blade-v2-...",
 })
 ```
@@ -59,7 +53,7 @@ const client = new BladeClient({
 
 ```ts
 const client = new BladeClient({
-  baseUrl,
+  baseUrl: "http://<host>:8020",
   token: () => localStorage.getItem("blade-token"),
 })
 ```
@@ -70,15 +64,19 @@ const client = new BladeClient({
 from blade_agent_kit import BladeAgentClient
 
 client = BladeAgentClient(
-    "https://blade.example.com",
+    "http://<host>:8020",
     token="sk-blade-v2-...",  # 不传则读环境变量 BLADE_AGENT_TOKEN
 )
 ```
+
+## Token 刷新
+
+浏览器场景下，如果请求返回 401，SDK 会自动调用 `http://<host>:8020/api/auth/refresh` 续期。开发者通常不需要手动处理。
 
 ## 常见问题
 
 | 问题 | 原因与修复 |
 | --- | --- |
 | REST 通但 Socket 不连 | REST 和 Socket.IO 共用同一个 token，确认用同一个 `BladeClient` 实例；换 token 后要重连 socket |
-| 401 | token 过期、被吊销或未创建，重新获取 API Key |
+| 401 | Token 未注入或格式错误，确认 token 格式为 `sk-blade-v2-...` |
 | 本地 mock 环境 | 访问 `/api/auth/login` 签发登录态，再创建 API Key |

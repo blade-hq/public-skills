@@ -2,9 +2,26 @@
 
 ## 浏览器开发者工具
 
-- **Network 面板**：检查 REST 请求（`/api/sessions` 等）和 Socket.IO 连接状态
+- **Network 面板**：检查 REST 请求（`http://<host>:8020/api/sessions` 等）和响应状态码
+- **WS 面板**：查看 WebSocket 帧（`http://<host>:8020` Socket.IO），观察 `chat:send`、`turn:start`、`turn:patch`、`turn:end`、`chat:end` 等事件
 - **Console**：SDK 的错误和警告会输出到控制台
-- **WS 面板**：查看 Socket.IO 的 `chat:send`、`turn:*`、`chat:end` 等事件
+
+```
+┌──────────────────────────────────────────────────────────┐
+│  DevTools - Network - WS                                 │
+│  ┌──────────────────────────────────────────────────────┐ │
+│  │ Name              Type    Status                     │ │
+│  │ socket.io/?...    ws      101                        │ │
+│  │                                                      │ │
+│  │ Messages:                                            │ │
+│  │ ▲ 42["chat:send",{"session_id":"...","message":...}] │ │
+│  │ ▼ 42["turn:start",{"turn_id":"...","role":"..."}]    │ │
+│  │ ▼ 42["turn:patch",{"data":{"turn":{...}}}]           │ │
+│  │ ▼ 42["turn:end",{"turn_id":"..."}]                   │ │
+│  │ ▼ 42["chat:end",{}]                                  │ │
+│  └──────────────────────────────────────────────────────┘ │
+└──────────────────────────────────────────────────────────┘
+```
 
 ## SDK 日志
 
@@ -24,11 +41,11 @@ socket.on("connect_error", (err) => console.error("[connect_error]", err.message
 
 ### 鉴权失败（401）
 
-**原因**：Token 过期、被吊销或未创建。
+**原因**：Token 未注入或格式错误。
 
 **修复**：
 - 确认 token 格式为 `sk-blade-v2-...`
-- 重新在网页端或 SDK 创建 API Key
+- 确认 `BladeClient` 构造时传入了 `token` 参数
 - 本地 mock 环境先访问 `/api/auth/login` 获取登录态
 
 ### WebSocket 连接失败
@@ -36,7 +53,7 @@ socket.on("connect_error", (err) => console.error("[connect_error]", err.message
 **现象**：REST API 返回 200，但 ChatView 显示"暂时无法建立连接"。
 
 **排查**：
-- `baseUrl` 是否是后端 origin，且不带 pathname
+- `baseUrl` 是否是后端 origin（`http://<host>:8020`），且不带 pathname
 - Token 是否同时用于 REST 和 Socket.IO（用同一个 `BladeClient` 实例）
 - 换 token 后是否重连 socket
 - 后端 CORS 是否放行宿主 origin

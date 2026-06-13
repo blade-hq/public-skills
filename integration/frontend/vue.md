@@ -32,7 +32,7 @@ import { BladeClient } from "@blade-hq/agent-kit/client"
 
 const token = import.meta.env.VITE_BLADE_AGENT_TOKEN
 const client = new BladeClient({
-  baseUrl: window.location.origin,
+  baseUrl: "http://<host>:8020",
   token: () => token,
 })
 ```
@@ -146,7 +146,7 @@ import { BladeClient } from "@blade-hq/agent-kit/client"
 import { useBladeChat } from "./composables/useBladeChat"
 
 const token = import.meta.env.VITE_BLADE_AGENT_TOKEN
-const client = new BladeClient({ baseUrl: window.location.origin, token: () => token })
+const client = new BladeClient({ baseUrl: "http://<host>:8020", token: () => token })
 const chat = useBladeChat(client)
 
 chat.createSession("vue chat example")

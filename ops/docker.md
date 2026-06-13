@@ -21,11 +21,15 @@ graph TD
 
 服务必须按以下顺序启动，确保依赖就绪：
 
-1. **Blade OAuth（Casdoor）** -- 认证服务，所有其他服务的登录依赖
-2. **Skill Registry** -- 技能注册中心（离线部署可跳过）
-3. **LLM Gateway** -- LLM 统一网关（可选，直连 LLM 时跳过）
-4. **blade-agent** -- 核心智能体后端
-5. **Blade OS** -- 前端桌面（可选）
+| 启动顺序 | 服务 | 端口 | 地址 |
+|---------|------|------|------|
+| 1 | Blade OAuth | 19000 | `http://<host>:19000` |
+| 2 | Skill Registry | 8010 | `http://<host>:8010` |
+| 3 | Blade Agent | 8020 | `http://<host>:8020` |
+| 4 | Blade OS | 80 | `http://<host>` |
+| 5 | LLM Gateway | 30000 | `http://<host>:30000` |
+| 6 | Gitea | 30030 | `http://<host>:30030` |
+| 7 | Mock Center | 30023 | `http://<host>:30023` |
 
 ## Docker Compose 配置要点
 
@@ -102,6 +106,39 @@ services:
 | `agent_env/skills/` | 技能快照 |
 | `casdoor_data` | Casdoor 配置和数据 |
 | `config/config.yaml` | LLM Gateway 源配置（会被管理 API 回写） |
+
+## 部署自检
+
+部署完成后，按顺序检查各服务接口是否正常响应：
+
+```bash
+# 1. Blade OAuth
+curl -f http://<host>:19000/api/health
+
+# 2. Skill Registry
+curl -f http://<host>:8010/api/health
+
+# 3. Blade Agent
+curl -f http://<host>:8020/api/health
+
+# 4. Blade OS（前端静态资源）
+curl -f http://<host>/
+
+# 5. LLM Gateway
+curl -f http://<host>:30000/health
+
+# 6. Gitea
+curl -f http://<host>:30030/
+
+# 7. Mock Center
+curl -f http://<host>:30023/health
+```
+
+如果某个服务返回非 200 状态码，检查对应容器日志：
+
+```bash
+docker compose logs <service-name> --tail 50
+```
 
 ## 国内镜像
 

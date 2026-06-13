@@ -106,6 +106,32 @@ docker run --rm $SANDBOX_IMAGE which some-tool
 docker tag ${SANDBOX_IMAGE%:*}:bak $SANDBOX_IMAGE
 ```
 
+## Nexus 私有源
+
+沙箱内可配置 Nexus 私有源用于安装内部包：
+
+```bash
+# Nexus 地址
+http://<host>:30021
+```
+
+在 blade-agent 的 `.env` 中配置沙箱使用的包源：
+
+```bash
+SANDBOX_PIP_INDEX_URL=http://<host>:30021/repository/pypi-proxy/simple/
+SANDBOX_NPM_CONFIG_REGISTRY=http://<host>:30021/repository/npm-proxy/
+```
+
+## 用户文件目录挂载
+
+每个用户的文件存储在宿主机的固定路径下，沙箱容器启动时会自动挂载：
+
+```
+/opt/box/files/users/{user_id}/
+```
+
+该目录用于存放用户上传的文件和工作区数据。沙箱内可通过 `/home/user/files/` 访问挂载的用户文件。
+
 ## 注意事项
 
 - 备份镜像（`:bak`）在确认新镜像稳定前不要删除

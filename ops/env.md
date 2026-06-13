@@ -113,6 +113,26 @@ lexical:
 | `MULTICA_SERVER_URL` | 否 | `http://localhost:8080` | Multica 服务地址 |
 | `ASR_PROVIDER` | 否 | `volcengine` | 语音识别提供者：`volcengine` / `qwen` |
 
+## 平台环境变量桶
+
+平台级环境变量通过管理后台统一配置，对所有会话生效。管理员可在 Blade OS 的系统设置中管理这些变量，无需修改 `.env` 文件或重启服务。
+
+平台环境变量桶适合配置所有用户共享的 API Key、服务地址等。
+
+## 用户自定义环境变量
+
+用户可在 Blade OS 的个人设置中添加自己的环境变量，这些变量仅对当前用户的会话生效，不影响其他用户。
+
+用户自定义变量会覆盖平台环境变量桶中的同名变量。
+
+## 功能开关
+
+| 变量 | 默认值 | 说明 |
+|------|--------|------|
+| `BLADE_DISABLE_SUBAGENT` | `false` | 设为 `true` 禁用子智能体，智能体将不会创建子任务 |
+| `BLADE_AGENT_MCP_ENABLED` | `true` | MCP 总开关 |
+| `BLADE_ENABLE_HTML_RENDER_TOOL` | `false` | 启用 RenderHtml 工具 |
+
 ## 调试
 
 | 变量 | 必填 | 默认值 | 说明 |

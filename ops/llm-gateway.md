@@ -2,6 +2,8 @@
 
 LLM Gateway 是统一网关，为内网散落的 LLM 上游（vLLM、sglang、OpenAI 兼容服务等）提供单一入口，同时暴露 OpenAI (`/v1/chat/completions`) 和 Anthropic (`/v1/messages`) 两套协议。
 
+默认运行在 `http://<host>:30000`。
+
 ## 上游配置
 
 ### 添加 Source
@@ -123,9 +125,34 @@ Gateway 自动完成 OpenAI 和 Anthropic 协议互转：
 GET /api/events    # SSE，实时推送 health 变化、模型发现、错误
 ```
 
+## Blade Agent 连接 LLM Gateway
+
+在 blade-agent 的 `.env` 中配置连接地址：
+
+```bash
+agent_llm_endpoint: http://127.0.0.1:30000
+```
+
+配置后 blade-agent 会通过 LLM Gateway 统一路由所有 LLM 请求，而非直连上游。
+
+## LLM 观测
+
+LLM Gateway 内置请求观测能力，可在 Blade OS 的高级设置中查看 LLM 调用统计，包括：
+
+- 各模型的请求数量、成功率
+- Token 用量统计
+- 延迟分布
+- 错误详情
+
+也可通过事件流接口实时监控：
+
+```
+GET /api/events    # SSE，实时推送 health 变化、模型发现、错误
+```
+
 ## Web 控制台
 
-打开 `http://<gateway-host>:29999/` 可访问内置控制台，功能包括：
+打开 `http://<host>:30000/` 可访问内置控制台，功能包括：
 
 - 实时显示源和模型状态
 - 事件流展示

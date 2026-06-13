@@ -21,14 +21,14 @@ await client.sessions.uploadFiles(session_id, ".", [
 
 ## 访问凭证（Token）
 
-SDK 使用 Bearer Token 鉴权，支持两种类型：
+SDK 使用 Bearer Token 鉴权。通过 API Key（`sk-blade-v2-...`）进行身份验证，长期有效，由已登录用户通过 Web UI 或 SDK 创建。
 
-| 类型 | 格式 | 有效期 | 适用场景 |
-| --- | --- | --- | --- |
-| API Key | `sk-blade-v2-...` | 长期有效 | 后端服务、脚本、第三方应用 |
-| Session JWT | 浏览器 cookie | 短期 | 用户已登录的同源前端 |
-
-第三方接入优先使用 API Key。
+```ts
+const client = new BladeClient({
+  baseUrl: "http://<host>:8020",
+  token: "sk-blade-v2-...",
+})
+```
 
 ## 工作模式
 
@@ -49,24 +49,35 @@ socket.emit("chat:send", {
 
 ## 整体流程
 
-```mermaid
-sequenceDiagram
-    participant User as 用户/宿主应用
-    participant Token as Token 服务
-    participant SDK as Agent Kit SDK
-    participant Session as 会话
-    participant Agent as 智能体
+Blade Agent API 基础地址：`http://<host>:8020`
 
-    User->>Token: 获取 API Key 或 JWT
-    Token-->>User: sk-blade-v2-...
-    User->>SDK: new BladeClient({ baseUrl, token })
-    SDK->>Session: createSession("任务描述")
-    Session-->>SDK: { session_id }
-    SDK->>Session: uploadFiles / chat:send
-    Session->>Agent: 执行任务
-    Agent-->>Session: turn:start → turn:patch → turn:end
-    Session-->>SDK: chat:end
-    SDK-->>User: 结果
+```
+┌──────────────┐         ┌──────────────────┐         ┌──────────────┐
+│  用户/宿主应用  │         │  Agent Kit SDK   │         │  Blade Agent │
+└──────┬───────┘         └────────┬─────────┘         └──────┬───────┘
+       │                          │                          │
+       │  1. 准备 API Key         │                          │
+       │  sk-blade-v2-...         │                          │
+       │                          │                          │
+       │  2. new BladeClient()    │                          │
+       │─────────────────────────>│                          │
+       │                          │                          │
+       │  3. createSession()      │  POST /api/sessions      │
+       │─────────────────────────>│─────────────────────────>│
+       │                          │  { session_id }          │
+       │                          │<─────────────────────────│
+       │                          │                          │
+       │  4. uploadFiles /        │  REST / Socket.IO        │
+       │     chat:send            │─────────────────────────>│
+       │─────────────────────────>│                          │
+       │                          │  turn:start              │
+       │                          │  turn:patch (流式)       │
+       │                          │  turn:end                │
+       │                          │<─────────────────────────│
+       │                          │  chat:end                │
+       │          结果             │<─────────────────────────│
+       │<─────────────────────────│                          │
+       │                          │                          │
 ```
 
 ## SDK 包入口

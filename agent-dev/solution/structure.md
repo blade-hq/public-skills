@@ -2,17 +2,23 @@
 
 ## v3 目录结构
 
-```text
+```
 <solution_id>/
-  solution.yaml          # Solution 包级信息
-  skills/                # 本地技能目录（所有角色共享）
-    <local_skill_id>/
-      SKILL.md
-  roles/                 # 业务角色目录
-    <biz_role_id>/
-      role.yaml          # 角色运行配置
-      AGENTS.md.j2       # 角色提示词模板
-      init/run.sh        # 角色初始化脚本（可选）
+├── solution.yaml              # Solution 级配置
+├── skills/                    # 本地技能目录（所有角色共享）
+│   ├── <skill_id_a>/
+│   │   ├── SKILL.md           # 技能定义
+│   │   └── references/        # 参考资料（可选）
+│   └── <skill_id_b>/
+│       └── SKILL.md
+└── roles/                     # 业务角色目录
+    ├── <biz_role_id_1>/
+    │   ├── role.yaml           # 角色运行配置
+    │   ├── AGENTS.md.j2        # 角色提示词模板
+    │   └── init/run.sh         # 角色初始化脚本（可选）
+    └── <biz_role_id_2>/
+        ├── role.yaml
+        └── AGENTS.md.j2
 ```
 
 ::: tip
@@ -55,9 +61,8 @@ roles:
 
 ## 语义规则
 
-- `roles` 在 v3 中只能是 role id 字符串列表，不能是对象。
-- 每个 role id 必须在 `roles/<role_id>/role.yaml` 中有对应定义。
-- `layout_type` 和 `initial_mode`、`initial_message` 可以在 solution 级设置默认值，角色级会覆盖。
-- 共享技能放在 `skills/` 目录下，由各角色的 `local_skills` 引用。
+- `roles` 列表只填角色 id 字符串，不能是对象。每个 id 必须在 `roles/<role_id>/role.yaml` 中有对应定义。
+- 多个角色共用的技能放在解决方案根目录的 `skills/` 下，由各角色的 `local_skills` 引用。
+- `layout_type`、`initial_mode`、`initial_message` 可以在 solution 级设置默认值，角色级设置会覆盖。
 - 全局技能用 `imported_skills` 引用，不要混入 `local_skills`。
 - v3 下禁止在 `roles/<biz_role_id>/skills/` 放置技能。

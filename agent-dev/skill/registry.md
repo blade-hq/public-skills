@@ -2,6 +2,11 @@
 
 技能注册中心（Skill Registry）是 Blade Agent 的技能管理服务，提供技能的注册、搜索、版本管理和分发能力。
 
+## 访问方式
+
+- **能力中心 Web UI**：`http://<host>:8010`，提供可视化的技能浏览、搜索和管理界面
+- **REST API**：`http://<host>:8010/api/...`，提供编程接口
+
 ## 搜索机制
 
 注册中心默认使用 **BM25**（jieba 分词）进行全文搜索，可选启用 **Embedding** 语义搜索：
@@ -41,6 +46,8 @@ data/
 在 Solution 的 `imported_skills` 中引用全局技能时，使用完整的 `org/skill_name` 格式。
 
 ## API 接口
+
+所有接口基础路径为 `http://<host>:8010`。
 
 | 接口 | 说明 |
 |------|------|

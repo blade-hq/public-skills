@@ -53,7 +53,7 @@ import { BladeClientProvider } from "@blade-hq/agent-kit/react"
 function App() {
   return (
     <BladeClientProvider
-      baseUrl="http://localhost:8020"
+      baseUrl="http://<host>:8020"
       token={() => localStorage.getItem("blade-token")}
     >
       <YourApp />
@@ -76,7 +76,7 @@ import "@blade-hq/agent-kit/style.css"
 export function App() {
   const [sessionId, setSessionId] = useState<string | null>(null)
   const client = useMemo(
-    () => new BladeClient({ baseUrl: "http://localhost:8020", token: () => token }),
+    () => new BladeClient({ baseUrl: "http://<host>:8020", token: () => token }),
     [],
   )
 
@@ -87,7 +87,7 @@ export function App() {
   }
 
   return (
-    <BladeClientProvider baseUrl="http://localhost:8020" token={() => token}>
+    <BladeClientProvider baseUrl="http://<host>:8020" token={() => token}>
       <main style={{ height: "100vh", display: "flex", flexDirection: "column", minHeight: 0 }}>
         <button onClick={createSession}>新建会话</button>
         {sessionId ? <ChatView sessionId={sessionId} /> : null}

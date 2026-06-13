@@ -1,30 +1,29 @@
 # 校验工具
 
-## validate_solution.py
+## 自动校验
 
-在创建或修改 Solution 包后，可以使用校验脚本快速检查结构是否正确：
+在「技能开发」应用（`http://<host>:8020/studio/skill-editor`）中上传解决方案包时，系统会自动校验目录结构和字段合法性。无需手动运行脚本，上传即校验。
 
-```bash
-uv run --script skills/solution-structure/scripts/validate_solution.py <solution_dir>
-```
-
-脚本使用 inline dependency metadata 声明 `pydantic` 和 `pyyaml`，`uv run --script` 会自动准备依赖，无需手动安装。
-
-校验通过输出：
+校验通过后，解决方案会被加载到调试环境；校验失败时，界面会逐条列出错误信息。
 
 ```
-OK: <solution_dir>
-```
-
-校验失败时，会逐条列出错误：
-
-```
-ERROR: <具体错误信息>
++----------------------------------------------------------+
+|  技能开发 - 上传解决方案                                    |
++----------------------------------------------------------+
+|                                                          |
+|  文件: my_solution.zip                    [上传]          |
+|                                                          |
+|  校验结果:                                                |
+|  x role.yaml 中的 id "prd" 与目录名 "sf_prd" 不一致       |
+|  x local_skills 引用的 "analyzer" 在 skills/ 下不存在     |
+|  x roles 列表为空，至少需要一个角色                         |
+|                                                          |
++----------------------------------------------------------+
 ```
 
 ## 校验项
 
-脚本会检查以下内容：
+系统会检查以下内容：
 
 - `solution.yaml` 存在且为合法 YAML
 - `manifest_version` 为 `3`
@@ -36,21 +35,16 @@ ERROR: <具体错误信息>
 - `role.yaml` 的 `id` 与目录名一致
 - v3 下不存在 `roles/<id>/skills/` 目录
 - `local_skills` 引用的 `skills/<id>/SKILL.md` 文件存在
-- 不使用旧字段 `skills`
-- 不包含未知字段（使用 `extra="forbid"` 严格校验）
-
-::: info
-此脚本只做本地结构校验，不替代平台的加载和运行时校验。
-:::
+- 不使用已废弃的旧字段
+- 不包含未知字段
 
 ## 常见校验错误及解决
 
-| 错误信息 | 原因 | 解决方法 |
-|----------|------|----------|
-| `file not found` | `solution.yaml` 或 `role.yaml` 不存在 | 检查路径和文件名是否正确 |
-| `id: must be a non-empty string` | `id` 字段为空或缺失 | 填写非空的 `id` 值 |
-| `roles: must contain at least one role id` | `roles` 列表为空 | 至少添加一个角色 id |
-| `id must match role directory name` | `role.yaml` 中的 `id` 与所在目录名不一致 | 保持 `id` 和目录名一致 |
-| `v3 does not support role-local skills` | 在 `roles/<id>/skills/` 下放了技能 | 将技能移到 Solution 级 `skills/` 目录 |
-| `local skill ... is missing` | `local_skills` 引用的技能目录下没有 `SKILL.md` | 在 `skills/<id>/` 下创建 `SKILL.md` |
-| `Extra inputs are not permitted` | YAML 中包含未知字段 | 移除多余字段或检查拼写 |
+| 错误 | 原因 | 解决方法 |
+|------|------|----------|
+| `id` 与目录名不一致 | `role.yaml` 中的 `id` 与所在目录名不同 | 保持 `id` 和目录名一致 |
+| 技能路径不存在 | `local_skills` 引用的技能在 `skills/` 下找不到 | 在 `skills/<id>/` 下创建 `SKILL.md` |
+| `roles` 列表为空 | `solution.yaml` 中没有定义角色 | 至少添加一个角色 id |
+| 包含未知字段 | YAML 中存在不支持的字段 | 移除多余字段或检查拼写 |
+| v3 不支持角色级技能目录 | 在 `roles/<id>/skills/` 下放了技能 | 将技能移到 Solution 级 `skills/` 目录 |
+| `layout_type` 值不合法 | 使用了不支持的布局类型 | 使用 `default`、`skill-editor` 或 `blade-coa` |
