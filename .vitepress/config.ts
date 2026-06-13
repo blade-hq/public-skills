@@ -57,7 +57,7 @@ export default defineConfig({
   title: "Blade OS 帮助文档",
   description: "使用入门、智能体开发、应用接入、部署运维",
   lang: "zh-CN",
-  base: "/public-skills/",
+  base: process.env.VITEPRESS_BASE || "/public-skills/",
 
   srcExclude: ["**/node_modules/**", "**/examples/**", "skills/**"],
   ignoreDeadLinks: true,
