@@ -4,6 +4,7 @@ export default defineConfig({
   title: "Blade Agent 开发文档",
   description: "SDK 集成、API 协议、Solution 结构、运维工具",
   lang: "zh-CN",
+  base: "/public-skills/",
 
   srcExclude: ["**/node_modules/**", "**/examples/**"],
   ignoreDeadLinks: true,
