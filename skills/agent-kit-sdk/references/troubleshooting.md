@@ -27,6 +27,125 @@ const items = useStore((state) => state.items[id] ?? EMPTY_ITEMS)
 - 把宿主样式限定到自己的容器，例如 `.toolbar button`，不要写全局 `button`。
 - 只用 `classNames` / `components` / `renderers.tool` 自定义 SDK。
 
+## React 依赖安装冲突
+
+现象：
+
+- `npm install` 报 `ERESOLVE unable to resolve dependency tree`。
+- 日志里出现 `@blade-hq/agent-kit` 需要 React 19，但项目安装了 React 18。
+- 日志里出现 `No matching version found for @blade-hq/agent-kit@^1.0.0`。
+
+修复：
+
+```bash
+npm install @blade-hq/agent-kit@0.5.11 react@^19.0.0 react-dom@^19.0.0 @tanstack/react-query@^5.0.0 sonner@^2.0.7
+```
+
+新建 React + Agent Kit 项目时不要默认选 React 18。不要用 `--force` 或 `--legacy-peer-deps` 绕过 peer dependency，绕过后 ChatView 运行时可能不稳定。
+
+## 前端调用了不存在的 Blade API 端点
+
+常见错误：
+
+- `POST /api/chat`
+- `GET /sessions`
+- `POST /sessions`
+- `POST /sessions/{id}/messages`
+
+修复：
+
+- 创建 session 用 SDK：`client.sessions.createSession(...)`，返回字段是 `session_id`。
+- 普通文件上传用 `POST /api/sessions/{session_id}/upload/{dir_path}`。
+- 发送业务任务用 Socket.IO：`socket.emit("chat:send", { session_id, message, mode: "executing" })`。
+- React 聊天 UI 优先用 `ChatView`，不要自造一套未经文档确认的 REST chat API。
+
+## 后端调用了不存在的 `/api/v1/*` 端点
+
+常见错误：
+
+- `POST /api/v1/sessions`
+- `POST /api/v1/sessions/{id}/workspace`
+- `POST /api/v1/sessions/{id}/tasks`
+- `GET /api/v1/sessions/{id}/tasks/{task_id}`
+- `POST /api/sessions/{id}/workspace`
+- `POST /api/sessions/{id}/tasks`
+- `GET /api/tasks/{task_id}`
+- `POST /api/tasks/{task_id}/stream`
+- 把文件 JSON 内容发到 workspace 接口
+- 创建 task 后轮询 task 状态来代替聊天流
+- `package.json` 没有安装 `@blade-hq/agent-kit`
+- `require("@blade-hq/agent-kit")` 或 `import ... from "@blade-hq/agent-kit"` 包根入口
+- `import { createClient } from "@blade-hq/agent-kit/client"` 或 `createClient(...)`
+- `client.uploadFile(...)`
+- `client.workspaces.uploadFile(...)`
+
+修复：
+
+- 创建 session 用 SDK：`client.sessions.createSession(...)`；如果直接 REST，使用 `POST /api/sessions`。
+- Node.js 后端从 `@blade-hq/agent-kit/client` 导入：`import { BladeClient } from "@blade-hq/agent-kit/client"`。
+- 创建 client 用 `new BladeClient({ baseUrl, token })`，不是 `createClient(...)`。
+- 普通文件上传优先使用 SDK：`client.sessions.uploadFiles(session_id, ".", files)`。
+- 直接 REST 上传时使用 `POST /api/sessions/{session_id}/upload/{dir_path}`，请求体必须是 `multipart/form-data`，字段是 `files` 和 `paths`。
+- 发送业务任务用 Socket.IO：`socket.emit("chat:send", { session_id, message, mode: "executing" })`。
+- 后端 SSE 包装层只是把 Socket.IO 事件转发给调用方，不要臆造 task REST API。
+- Node.js 后端的 `package.json` 必须安装 `@blade-hq/agent-kit@0.5.11`；不要只用 `axios` 调 Blade。
+
+## Node 后端导入 SDK 时报 `ERR_PACKAGE_PATH_NOT_EXPORTED`
+
+常见原因：
+
+- 在 Node 22 / `@blade-hq/agent-kit@0.5.11` 下写了 `require("@blade-hq/agent-kit")`。
+- 从包根导入：`import { BladeClient } from "@blade-hq/agent-kit"`。
+- `package.json` 没有设置 `"type": "module"`，但代码使用 ESM-only SDK。
+
+修复：
+
+```ts
+import { BladeClient } from "@blade-hq/agent-kit/client"
+```
+
+`package.json` 至少包含：
+
+```json
+{
+  "type": "module",
+  "dependencies": {
+    "@blade-hq/agent-kit": "0.5.11"
+  }
+}
+```
+
+## Node 后端上传时报 `client.uploadFile is not a function`
+
+原因：
+
+- 0.5.11 的 Node client 没有 `client.uploadFile(...)`。
+
+修复：
+
+```ts
+const result = await client.sessions.uploadFiles(session_id, ".", [
+  { file: new File([buffer], "report.md"), name: "report.md" },
+])
+```
+
+如果不用 SDK 上传，才直接调用公开 REST multipart：`POST /api/sessions/{session_id}/upload/{dir_path}`。
+
+## Node 后端上传时报 `client.workspaces` 是 undefined
+
+原因：
+
+- 0.5.11 的普通文件上传方法不在 `client.workspaces` 下。
+- 不要猜 `client.workspaces.uploadFile(...)`。
+
+修复：
+
+```ts
+const result = await client.sessions.uploadFiles(session_id, ".", [
+  { file: new File([buffer], "report.md"), name: "report.md" },
+])
+```
+
 ## Socket 连接失败
 
 现象：

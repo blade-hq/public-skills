@@ -6,6 +6,8 @@
 
 React 应用可以直接使用 SDK 组件：
 
+新项目先按 [react-quickstart.md](react-quickstart.md) 安装 `@blade-hq/agent-kit@0.5.11`、React 19 和 peer dependencies，再使用 `ChatView`。
+
 ```tsx
 import { ChatView } from "@blade-hq/agent-kit/chat"
 
