@@ -5,23 +5,61 @@
 - **Node.js**：`@blade-hq/agent-kit/client`（纯 client，不依赖 React）。
 - **Python**：`blade-agent-kit`（异步 REST + Socket.IO client）。
 
+Node.js 后端默认使用 `@blade-hq/agent-kit@0.5.11` 和 `@blade-hq/agent-kit/client`。`docs/rest-api.md`、`docs/websocket-api.md` 是底层协议参考，只用于查证公开 endpoint 和事件；除非用户明确要求“不使用 SDK，直接协议接入”，否则不要用裸 `axios`/`fetch` + `socket.io-client` 代替 Node SDK。
+
 两者都需要先拿到 Bearer token，见 [auth-token.md](auth-token.md)。
 
 后端代用户发起真实任务时，通常显式使用干活模式：`mode: "executing"`。模式说明见 [work-modes.md](work-modes.md)。
 
 如果后端要接收用户上传的 Markdown、文本、CSV 等业务文件，并让 Agent 读取分析，先读 [file-upload.md](file-upload.md)。普通文件上传和 session skill 上传不同，不要用 `uploadSessionSkill()` 上传业务文档。
 
+后端集成不要臆造 `/api/v1/*`、workspace JSON 上传或 task polling API。公开后端链路固定为：
+
+1. 创建 session：优先用 `client.sessions.createSession(...)`；直接 REST 时是 `POST /api/sessions`。
+2. 上传普通文件：Node SDK 优先用 `client.sessions.uploadFiles(session_id, ".", files)`；直接 REST 时是 `POST /api/sessions/{session_id}/upload/{dir_path}`，multipart 字段是 `files` 和 `paths`。
+3. 发送业务任务：用 Socket.IO `chat:send`，传 `{ session_id, message, mode: "executing" }`。
+4. 监听流式结果：`turn:start`、`turn:patch`、`turn:end`、`chat:end`、`system:error`。
+
+不要使用这些未公开路径或方法：
+
+- `POST /api/v1/sessions`
+- `POST /api/v1/sessions/{id}/workspace`
+- `POST /api/v1/sessions/{id}/tasks`
+- `GET /api/v1/sessions/{id}/tasks/{task_id}`
+- `POST /api/sessions/{id}/workspace`
+- `POST /api/sessions/{id}/tasks`
+- `GET /api/tasks/{task_id}`
+- `POST /api/tasks/{task_id}/stream`
+- 把普通文件用 JSON `{ files: [...] }` 写进 workspace
+- 创建 task 后轮询 task status 来代替 Socket.IO `chat:send`
+- 用 `axios` 直接调用臆造的 Blade session/task/workspace API 来替代 `BladeClient`
+- 用 `axios`/`fetch` + 裸 `socket.io-client` 作为 Node 后端默认实现，绕过 `@blade-hq/agent-kit/client`
+- `DOCS_AUDIT.md` 把 SDK 包入口写成“无特定 SDK”
+- `require("@blade-hq/agent-kit")` 或从包根导入；Node 后端必须从 `@blade-hq/agent-kit/client` 导入
+- `import { createClient } from "@blade-hq/agent-kit/client"`；Node 后端创建 client 必须用 `new BladeClient({ baseUrl, token })`
+- `client.uploadFile(...)`；Node SDK 的普通文件上传方法是 `client.sessions.uploadFiles(...)`
+- `client.workspaces.uploadFile(...)`；Node SDK 的普通文件上传方法是 `client.sessions.uploadFiles(...)`
+
 ---
 
 ## Node.js（`@blade-hq/agent-kit/client`）
 
+Node.js 新后端建议先复制 [backend-quickstart.md](backend-quickstart.md) 的 Express 模板，再按本页扩展。
+
 ### 安装
 
 ```bash
-npm install @blade-hq/agent-kit
+npm install @blade-hq/agent-kit@0.5.11
 ```
 
 只用 `/client` 时不需要 React、不需要导入样式。包是 ESM，脚本用 `.mjs` 或在 `package.json` 设 `"type": "module"`。
+
+不要写 CommonJS：
+
+```js
+// 错误：0.5.11 没有包根 CommonJS exports，Node 22 会报 ERR_PACKAGE_PATH_NOT_EXPORTED
+const { BladeClient } = require("@blade-hq/agent-kit")
+```
 
 ### 创建 client
 
@@ -32,6 +70,34 @@ const client = new BladeClient({
   baseUrl: process.env.BLADE_AGENT_URL, // 后端 origin，不带 pathname
   token: process.env.BLADE_AGENT_TOKEN, // sk-blade-v2-...
 })
+```
+
+不要写：
+
+```ts
+// 错误：0.5.11 Node client 没有 createClient 入口
+import { createClient } from "@blade-hq/agent-kit/client"
+const client = createClient({ baseUrl, token })
+```
+
+### 公开后端链路速查
+
+如果你在写 Express/Fastify/Koa 包装层，业务 API 可以自定义，但调用 Blade Agent 时只使用下面这些公开入口：
+
+```ts
+const client = new BladeClient({ baseUrl, token })
+const { session_id } = await client.sessions.createSession("文档分析")
+
+// 普通文件上传走 SDK uploadFiles；不是 /api/v1，也不是 JSON workspace 写入
+await client.sessions.uploadFiles(session_id, ".", [
+  { file: new File([buffer], "report.md"), name: "report.md" },
+])
+
+// 执行业务任务走 Socket.IO chat:send，不是 task polling
+const socket = client.socket()
+socket.connect()
+socket.emit("session:subscribe", { session_id })
+socket.emit("chat:send", { session_id, message, mode: "executing" })
 ```
 
 ### 一次性问答（headless，最简单）
@@ -119,20 +185,10 @@ const { session_id } = await client.sessions.createSession("文档分析")
 
 const localPath = "q2-launch-notes.md"
 const remotePath = basename(localPath)
-const form = new FormData()
-form.append("files", new Blob([await readFile(localPath)]), remotePath)
-form.append("paths", JSON.stringify([remotePath]))
-
-const uploadResponse = await fetch(
-  `${baseUrl.replace(/\/$/, "")}/api/sessions/${session_id}/upload/${encodeURIComponent(".")}`,
-  {
-    method: "POST",
-    headers: { Authorization: `Bearer ${token}` },
-    body: form,
-  },
-)
-const uploadResult = await uploadResponse.json()
-if (!uploadResponse.ok || uploadResult.failed?.length) {
+const uploadResult = await client.sessions.uploadFiles(session_id, ".", [
+  { file: new File([await readFile(localPath)], remotePath), name: remotePath },
+])
+if (uploadResult.failed?.length) {
   throw new Error(`上传失败: ${JSON.stringify(uploadResult)}`)
 }
 
