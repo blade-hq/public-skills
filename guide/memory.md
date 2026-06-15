@@ -3,6 +3,7 @@
 ## 什么是记忆
 
 智能体可以记住跨会话的关键信息，例如你的偏好、项目背景、常用术语等。记忆一旦创建，智能体会在后续所有对话中自动参考这些信息，无需你反复说明。
+<video src="/images/memory-demo.mp4" controls autoplay loop muted playsinline style="width:100%;border-radius:8px;margin-top:16px"></video>
 
 ## 查看记忆列表
 

@@ -7,7 +7,7 @@
 - 每天早上生成销售日报
 - 每周五下午汇总本周数据
 - 每月初检查合同到期情况
-
+<video src="/images/scheduled-tasks-demo.mp4" controls autoplay loop muted playsinline style="width:100%;border-radius:8px;margin-top:16px"></video>
 ## 创建定时任务
 
 有两种方式创建定时任务：

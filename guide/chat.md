@@ -4,9 +4,13 @@
 
 在对话框中输入文字，按回车或点击发送按钮即可。智能体会根据当前解决方案和角色，调用相关技能来处理你的请求。
 
+![发送消息](/images/chat-send-message.png)
+
 ## 语音输入
 
 点击输入框旁的麦克风按钮开始录音，系统会实时将语音转为文字（支持豆包 Seed-ASR、Qwen3-ASR）。录音过程中会显示波形动画，完成后文字自动填入输入框。
+
+<video src="/images/chat-voice-input.mp4" controls autoplay loop muted playsinline style="width:100%;border-radius:8px;margin-top:16px"></video>
 
 ## 上传文件
 
@@ -18,9 +22,13 @@
 
 上传时会显示进度条，完成后智能体可以读取文件内容并据此回答。
 
+![上传文件](/images/chat-file-upload.png)
+
 ## 图片附件
 
 消息中可以直接粘贴或上传图片，智能体支持多模态理解，能够识别和分析图片中的内容。
+
+![图片附件](/images/chat-image-attachment.png)
 
 ## 规划模式与执行模式
 
@@ -61,7 +69,7 @@
 | [文本输入框]  [麦克风] [上传] [规划/执行切换]     [发送]            |
 +------------------------------------------------------------------+
 ```
-
+<video src="/images/first-chat-demo.mp4" controls autoplay loop muted playsinline style="width:100%;border-radius:8px;margin-top:16px"></video>
 ## 预览功能
 
 智能体生成的产物可以直接在对话中预览：
@@ -70,10 +78,12 @@
 - **文件预览**：文档、表格等文件内容直接展示
 - **iframe 预览**：网页类产物通过内嵌窗口预览
 - **PDF 和图片**：直接在对话中查看
+<video src="/images/preview-function.mp4" controls autoplay loop muted playsinline style="width:100%;border-radius:8px;margin-top:16px"></video>
 
 ## 模型选择
 
 对话中可以动态切换 LLM 模型。管理员可在后台配置可用模型的白名单。
+<video src="/images/choose-model.mp4" controls autoplay loop muted playsinline style="width:100%;border-radius:8px;margin-top:16px"></video>
 
 ## 常见失败与处理
 
