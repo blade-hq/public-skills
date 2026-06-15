@@ -1,3 +1,7 @@
 node_modules/
 .vitepress/dist/
 .vitepress/cache/
+.vitepress/.temp/
+vitepress-dev*.log
+public/images/9e329bf9-67a2-4f3a-a983-92e9a7868941.jpeg
+public/images/chat-voice-input.png
