@@ -59,6 +59,7 @@ export default defineConfig({
   lang: "zh-CN",
   base: process.env.VITEPRESS_BASE || "/public-skills/",
 
+  vite: { server: { strictPort: true } },
   srcExclude: ["**/node_modules/**", "**/examples/**", "skills/**"],
   ignoreDeadLinks: true,
 
@@ -90,16 +91,17 @@ export default defineConfig({
             { text: "解决方案与角色", link: "/guide/solutions-and-roles" },
             { text: "云电脑", link: "/guide/cloud-computer" },
             { text: "软件工厂", link: "/guide/factory" },
-          ],
-        },
-        {
-          text: "智能助手",
-          items: [
-            { text: "对话与交互", link: "/guide/chat" },
-            { text: "会话管理", link: "/guide/sessions" },
-            { text: "记忆功能", link: "/guide/memory" },
-            { text: "定时任务", link: "/guide/scheduled-tasks" },
-            { text: "浏览器插件", link: "/guide/browser-extension" },
+            {
+              text: "智能助手",
+              collapsed: true,
+              items: [
+                { text: "对话与交互", link: "/guide/chat" },
+                { text: "会话管理", link: "/guide/sessions" },
+                { text: "记忆功能", link: "/guide/memory" },
+                { text: "定时任务", link: "/guide/scheduled-tasks" },
+                { text: "浏览器插件", link: "/guide/browser-extension" },
+              ],
+            },
           ],
         },
       ],
