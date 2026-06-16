@@ -23,7 +23,7 @@ from typing import Any, Literal
 from pydantic import BaseModel, ConfigDict, ValidationError, field_validator
 import yaml
 
-LayoutType = Literal["default", "skill-editor", "blade-coa"]
+LayoutType = Literal["default", "chat-only", "chat-preview", "skill-editor", "blade-coa", "solution-app"]
 InitialMode = Literal["planning", "executing"]
 
 
@@ -38,6 +38,7 @@ class SolutionYaml(BaseModel):
     layout_type: LayoutType = "default"
     initial_mode: InitialMode | None = None
     initial_message: str | None = None
+    preview: dict[str, str] | None = None
     skill_tools_enabled: bool = True
     imported_skills: list[str] = []
     roles: list[str]
@@ -83,6 +84,7 @@ class RoleYaml(BaseModel):
     layout_type: LayoutType | None = None
     initial_mode: InitialMode | None = None
     initial_message: str | None = None
+    preview: dict[str, str] | None = None
     local_skills: list[str] = []
     imported_skills: list[str] = []
 
