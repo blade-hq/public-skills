@@ -4,7 +4,9 @@
 
 ```
 <solution_id>/
-├── solution.yaml              # Solution 级配置
+├── solution.yaml              # Solution 级配置（必需）
+├── AGENTS.md.j2               # Solution 级提示词模板（可选）
+├── ui.json                    # UI 配置（layout_type 为 solution-app 时推荐提供）
 ├── skills/                    # 本地技能目录（所有角色共享）
 │   ├── <skill_id_a>/
 │   │   ├── SKILL.md           # 技能定义
@@ -14,8 +16,9 @@
 └── roles/                     # 业务角色目录
     ├── <biz_role_id_1>/
     │   ├── role.yaml           # 角色运行配置
-    │   ├── AGENTS.md.j2        # 角色提示词模板
-    │   └── init/run.sh         # 角色初始化脚本（可选）
+    │   ├── AGENTS.md.j2        # 角色提示词模板（可选）
+    │   └── init/
+    │       └── run.sh          # 角色初始化脚本（可选）
     └── <biz_role_id_2>/
         ├── role.yaml
         └── AGENTS.md.j2
@@ -51,13 +54,37 @@ roles:
 | `manifest_version` | int | 是 | - | 必须为 `3` |
 | `version` | string | 是 | - | 版本号，非空 |
 | `description` | string | 否 | `""` | Solution 描述 |
-| `layout_type` | string | 否 | `"default"` | 布局类型，可选值：`default`、`skill-editor`、`blade-coa` |
+| `layout_type` | string | 是 | - | 布局类型，见[布局类型](#布局类型)可选值 |
 | `initial_mode` | string | 否 | `null` | 默认初始模式，可选值：`planning`、`executing` |
 | `initial_message` | string | 否 | `null` | 默认初始消息 |
 | `skill_tools_enabled` | bool | 否 | `true` | 是否启用技能工具 |
 | `imported_skills` | list[string] | 否 | `[]` | 从技能注册中心引入的全局技能 |
 | `roles` | list[string] | 是 | - | 角色 id 列表，至少一个，不允许重复 |
-| `data` | dict | 否 | `null` | 自定义扩展数据 |
+| `preview` | object | 否 | `null` | 预览面板配置，详见[预览配置](#预览配置) |
+| `data` | dict | 否 | `null` | 自定义扩展数据，字符串值支持 `${ENV_VAR}` 环境变量展开 |
+
+## 布局类型
+
+| layout_type | 说明 |
+|-------------|------|
+| `default` | 默认对话布局，纯聊天界面 |
+| `chat-only` | 仅聊天界面 |
+| `chat-preview` | 对话 + 预览面板 |
+| `skill-editor` | 技能编辑器布局，左侧编辑器 + 右侧对话 |
+| `blade-coa` | 工作台布局，支持多面板协作 |
+| `solution-app` | 独立应用布局，需配合 `ui.json` 使用 |
+
+## 预览配置
+
+`preview` 字段用于配置预览面板的默认内容。`url` 和 `title` 均支持 `${ENV_VAR}` 环境变量展开。
+
+```yaml
+preview:
+  url: https://example.com/dashboard    # 必填
+  title: 业务仪表盘                      # 可选
+```
+
+`preview` 可以在 solution.yaml 和 role.yaml 中分别配置，角色级覆盖 solution 级。
 
 ## 语义规则
 

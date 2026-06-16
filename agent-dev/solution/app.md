@@ -13,8 +13,11 @@ Solution App 是将解决方案作为独立应用运行的模式。通过配置 
 | layout_type | 说明 |
 |-------------|------|
 | `default` | 默认对话布局，纯聊天界面 |
+| `chat-only` | 仅聊天界面 |
+| `chat-preview` | 对话 + 预览面板 |
 | `skill-editor` | 技能编辑器布局，左侧编辑器 + 右侧对话 |
 | `blade-coa` | 工作台布局，支持多面板协作 |
+| `solution-app` | 独立应用布局，需配合 `ui.json` 使用 |
 
 ```yaml
 # solution.yaml 中设置全局默认布局
@@ -63,3 +66,69 @@ roles:
 ```
 
 `data` 字段为自定义扩展数据，布局组件会读取其中的配置来初始化预览面板。
+
+## 独立应用布局（solution-app）
+
+`solution-app` 布局将 Solution 作为独立应用运行，具有品牌化的项目列表、创建表单等定制 UI。推荐在 Solution 根目录提供 `ui.json` 配置文件来定制界面；缺失时前端使用默认配置。
+
+### ui.json 配置
+
+`ui.json` 必须包含 `branding` 字段，其他字段可选：
+
+```json
+{
+  "branding": {
+    "name": "智能标书",
+    "subtitle": "Smart Bid Assistant",
+    "icon_text": "标",
+    "icon_gradient": "from-blue-500 to-indigo-600"
+  },
+  "list": {
+    "title": "标书项目",
+    "create_button": "新建标书项目",
+    "card": {
+      "subtitle": "$.meta.buyer",
+      "stats": [
+        { "label": "已填字段", "value": "$.meta.filled" },
+        { "label": "待确认", "value": "$.meta.pending", "color": "amber" }
+      ]
+    }
+  },
+  "create": {
+    "title": "创建标书项目",
+    "description": "说明你要做什么，并上传相关材料",
+    "submit_button": "创建标书项目",
+    "sections": [
+      {
+        "id": "intent",
+        "title": "你要做什么？",
+        "fields": [
+          {
+            "id": "description",
+            "kind": "textarea",
+            "label": "任务描述",
+            "placeholder": "例如：请根据招标文件自动生成投标文件"
+          }
+        ]
+      },
+      {
+        "id": "upload",
+        "title": "上传项目材料",
+        "fields": [
+          {
+            "id": "files",
+            "kind": "file-upload",
+            "accept": [".docx", ".pdf", ".zip"],
+            "categories": [
+              { "label": "招标文件", "description": "招标公告、采购文件", "color": "blue" },
+              { "label": "公司资质", "description": "营业执照、资质证书", "color": "amber" }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+`card.stats[].value` 支持 `$.meta.<key>` 格式的引用，从项目的 `.ui/state.json` 中 `meta` 字段动态取值。

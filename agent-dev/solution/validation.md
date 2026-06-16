@@ -29,7 +29,7 @@
 - `manifest_version` 为 `3`
 - `id`、`name`、`version` 为非空字符串
 - `roles` 为非空、无重复的 role id 字符串列表
-- `layout_type` 为允许值（`default`、`skill-editor`、`blade-coa`）
+- `layout_type` 为允许值（`default`、`chat-only`、`chat-preview`、`skill-editor`、`blade-coa`、`solution-app`）
 - `initial_mode` 为允许值（`planning`、`executing`）
 - 每个 `roles/<id>/role.yaml` 存在，`id`/`name`/`version` 完整
 - `role.yaml` 的 `id` 与目录名一致
@@ -47,4 +47,4 @@
 | `roles` 列表为空 | `solution.yaml` 中没有定义角色 | 至少添加一个角色 id |
 | 包含未知字段 | YAML 中存在不支持的字段 | 移除多余字段或检查拼写 |
 | v3 不支持角色级技能目录 | 在 `roles/<id>/skills/` 下放了技能 | 将技能移到 Solution 级 `skills/` 目录 |
-| `layout_type` 值不合法 | 使用了不支持的布局类型 | 使用 `default`、`skill-editor` 或 `blade-coa` |
+| `layout_type` 值不合法 | 使用了不支持的布局类型 | 使用 `default`、`chat-only`、`chat-preview`、`skill-editor`、`blade-coa` 或 `solution-app` |
