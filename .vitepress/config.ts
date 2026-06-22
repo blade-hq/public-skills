@@ -163,11 +163,13 @@ function buildLlmsTxt(): string {
     }
   };
 
-  const seenGroups = new Set<string>();
+  // 按对象引用去重：integrationSidebar 被 /integration/ 与 /api/ 共用（同一引用）只出现一次；
+  // 同名不同链接的组（如 agent-dev 与 integration 各自的"调试与排查"）是不同引用，都会保留
+  const seenGroups = new Set<any>();
   for (const groups of Object.values(sidebar)) {
     for (const group of groups as any[]) {
-      if (seenGroups.has(group.text)) continue;
-      seenGroups.add(group.text);
+      if (seenGroups.has(group)) continue;
+      seenGroups.add(group);
       lines.push(`## ${group.text}`);
       lines.push("");
       emitItems(group.items, "");
