@@ -9,6 +9,10 @@ hero:
 
 <div class="home-sections">
 
+<div class="agent-hint">
+<strong>AI 智能体</strong>：全站索引见 <a href="./llms.txt"><code>llms.txt</code></a>；需要完整内容请下载 <a href="./skills.zip"><code>skills.zip</code></a>，解压后用 Grep/Read 按需查阅，避免整包读入上下文。
+</div>
+
 <div class="home-section">
 <h2>使用指南</h2>
 <div class="card-grid">
@@ -90,6 +94,17 @@ hero:
   max-width: 1152px;
   margin: 0 auto;
   padding: 0 24px 64px;
+}
+
+.agent-hint {
+  margin-top: 32px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  background: var(--vp-c-bg-soft);
+  border: 1px solid var(--vp-c-divider);
+  font-size: 14px;
+  color: var(--vp-c-text-2);
+  line-height: 1.6;
 }
 
 .home-section {
