@@ -40,6 +40,23 @@ session_id = created.id
 initial_mode: executing
 ```
 
+## 内置 Solution
+
+平台预置了以下 Solution，创建会话时可以直接使用对应的 `solution_id`：
+
+| solution_id | 说明 |
+|-------------|------|
+| `skill_editor` | 技能编辑器，提供技能开发与调试环境 |
+| `software_factory` | 软件工程工作台，支持需求拆分、PRD、UI 设计、技术设计到任务分工的完整流程 |
+
+示例——创建技能编辑器会话：
+
+```ts
+const { session_id } = await client.sessions.createSession("技能编辑", {
+  solution_id: "skill_editor",
+})
+```
+
 ## 注意事项
 
 - `solution_id` 和 `biz_role_id` 在创建会话时指定，创建后不可更改

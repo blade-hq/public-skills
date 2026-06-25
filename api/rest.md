@@ -261,7 +261,7 @@
 ```json
 {
   "intent": "",                          // string, 会话意图
-  "solution_id": null,                   // string?, Solution ID
+  "solution_id": null,                   // string?, Solution ID（内置值：skill_editor / software_factory）
   "biz_role_id": null,                   // string?, 业务角色 ID
   "template_id": null,                   // string?, 模板 ID（旧版）
   "primary_skill_id": null,              // string?, 主技能 ID
