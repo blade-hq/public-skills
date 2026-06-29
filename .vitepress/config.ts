@@ -76,6 +76,7 @@ const sidebar = {
         { text: "解决方案与角色", link: "/guide/solutions-and-roles" },
         { text: "云电脑", link: "/guide/cloud-computer" },
         { text: "软件工厂", link: "/guide/factory" },
+        { text: "技能编辑", link: "/guide/skill-editor" },
         {
           text: "智能助手",
           collapsed: true,

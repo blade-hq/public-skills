@@ -40,6 +40,10 @@ hero:
 <h3>软件工厂</h3>
 <p>从创建项目到发布应用的完整开发工作台</p>
 </a>
+<a class="card" href="/public-skills/guide/skill-editor.html">
+<h3>技能编辑</h3>
+<p>把资料、流程和历史对话沉淀成可复用技能</p>
+</a>
 </div>
 </div>
 
