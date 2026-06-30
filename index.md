@@ -88,6 +88,10 @@ hero:
 <h3>监控与观测</h3>
 <p>Prometheus、Grafana、LLM 请求观测</p>
 </a>
+<a class="card" href="/public-skills/ops/use-llm.html">
+<h3>使用盒子内的大模型</h3>
+<p>通过 OpenAI 兼容接口调用盒子内置模型</p>
+</a>
 </div>
 </div>
 
