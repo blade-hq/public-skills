@@ -2,6 +2,14 @@
 
 盒子内置了大语言模型（LLM），通过 LLM Gateway 对外提供 OpenAI 兼容接口。你可以直接调用这些接口，将盒子作为 AI 后端接入自己的应用或工具。
 
+在 Blade OS 桌面的「高级设置」中，点击「模型服务网关」可以打开 Gateway 控制台：
+
+![从 Blade OS 桌面打开模型服务网关](/images/llm-gateway-entry.png)
+
+控制台的「模型」页签可以查看可用模型列表和调用方式示例：
+
+![Gateway 控制台 — 模型名称与调用方式](/images/llm-gateway-console.png)
+
 ## 接口信息
 
 ### 地址与端口
