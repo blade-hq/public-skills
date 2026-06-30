@@ -132,6 +132,7 @@ const sidebar = {
         { text: "Docker 部署", link: "/ops/docker" },
         { text: "Blade OAuth", link: "/ops/oauth" },
         { text: "LLM Gateway 配置", link: "/ops/llm-gateway" },
+        { text: "使用盒子内的大模型", link: "/ops/use-llm" },
         { text: "沙箱镜像定制", link: "/ops/sandbox" },
         { text: "环境变量参考", link: "/ops/env" },
         { text: "监控与观测", link: "/ops/monitoring" },
