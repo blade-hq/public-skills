@@ -15,7 +15,7 @@
 ```
 POST /api/sessions
 Content-Type: application/json
-Authorization: Bearer sk-blade-v2-xxx
+Authorization: Bearer sk-blade-v3-xxx
 
 {
   "intent": "帮我分析销售数据"
@@ -38,7 +38,7 @@ Authorization: Bearer sk-blade-v2-xxx
 
 ```
 连接地址: wss://blade.example.com/socket.io/
-auth: { "token": "sk-blade-v2-xxx" }
+auth: { "token": "sk-blade-v3-xxx" }
 ```
 
 ---

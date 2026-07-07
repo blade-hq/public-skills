@@ -352,7 +352,7 @@ Turn 状态变更。
 {
   "id": "key_xxx",
   "name": "My Key",
-  "masked": "sk-blade-v2-...xxxx",
+  "masked": "sk-blade-v3-...xxxx",
   "plaintext": null,
   "created_at": "2026-01-01T00:00:00Z",
   "last_used_at": "2026-01-02T00:00:00Z"

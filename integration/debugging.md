@@ -44,7 +44,7 @@ socket.on("connect_error", (err) => console.error("[connect_error]", err.message
 **原因**：Token 未注入或格式错误。
 
 **修复**：
-- 确认 token 格式为 `sk-blade-v2-...`
+- 确认 token 格式为 `sk-blade-v3-...`
 - 确认 `BladeClient` 构造时传入了 `token` 参数
 - 本地 mock 环境先访问 `/api/auth/login` 获取登录态
 

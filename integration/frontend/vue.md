@@ -1,26 +1,18 @@
 # Vue 接入
 
+::: tip 完整示例工程
+[下载 examples-vue.zip](/public-skills/downloads/examples-vue.zip) — Vite + Vue 3 可运行工程，填好 `.env.local` 即可 `pnpm dev`。
+:::
+
 Vue 不能直接使用 `ChatView`（React 组件），需要用 `@blade-hq/agent-kit/client` 和底层 Socket.IO 自行渲染。
 
 ## 安装与依赖
 
-```bash
-pnpm add @blade-hq/agent-kit@0.5.11 vue@^3.5.13
-```
+版本号需和 Blade Agent 后端一致（[如何查看](/integration/concepts#快速开始)）：
 
-```json
-{
-  "type": "module",
-  "dependencies": {
-    "@blade-hq/agent-kit": "^0.4.17",
-    "vue": "^3.5.13"
-  },
-  "devDependencies": {
-    "@vitejs/plugin-vue": "^5.2.1",
-    "typescript": "^5.7.0",
-    "vite": "^6.0.0"
-  }
-}
+```bash
+# 将 <version> 替换为后端版本号，如 1.0.10
+pnpm add @blade-hq/agent-kit@<version> vue@^3.5.13
 ```
 
 Vue 只使用 `/client` 入口，不需要 React 相关依赖，也不需要导入 `style.css`。
@@ -177,6 +169,14 @@ export function extractText(blocks: unknown): string {
     .join("")
 }
 ```
+
+::: warning chat:send 类型问题
+SDK 自动生成的类型把 `chat:send` 的 `message` 误标为对象，但后端实际接受字符串。传字符串时需要做一次类型断言：
+```ts
+import type { ChatSendPayload } from "@blade-hq/agent-kit/client"
+socket.emit("chat:send", { session_id, message: text } as unknown as ChatSendPayload)
+```
+:::
 
 ::: tip 简化方案
 如果不需要逐字流式动画，可以只在 `chat:end` 时调一次 `client.sessions.getSessionTurns(session_id)` 拿完整数据渲染，避免手动拼 `turn:patch`。

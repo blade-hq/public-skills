@@ -35,7 +35,7 @@ import { BladeClient } from "@blade-hq/agent-kit/client"
 
 const client = new BladeClient({
   baseUrl: process.env.BLADE_AGENT_URL,  // 后端 origin，不带 pathname
-  token: process.env.BLADE_AGENT_TOKEN,  // sk-blade-v2-...
+  token: process.env.BLADE_AGENT_TOKEN,  // sk-blade-v3-...
 })
 ```
 

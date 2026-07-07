@@ -1,34 +1,20 @@
 # React 接入
 
+::: tip 完整示例工程
+[下载 examples-react.zip](/public-skills/downloads/examples-react.zip) — Vite + React 19 可运行工程，填好 `.env.local` 即可 `pnpm dev`。
+:::
+
 ## 安装与依赖
 
+版本号需和 Blade Agent 后端一致（[如何查看](/integration/concepts#快速开始)）：
+
 ```bash
-npm install @blade-hq/agent-kit@0.5.11 react@^19.0.0 react-dom@^19.0.0 @tanstack/react-query@^5.0.0 sonner@^2.0.7
-```
-
-对应 `package.json`：
-
-```json
-{
-  "type": "module",
-  "dependencies": {
-    "@blade-hq/agent-kit": "0.5.11",
-    "@tanstack/react-query": "^5.0.0",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0",
-    "sonner": "^2.0.7"
-  },
-  "devDependencies": {
-    "@vitejs/plugin-react": "^4.0.0",
-    "vite": "^5.0.0",
-    "typescript": "^5.0.0"
-  }
-}
+# 将 <version> 替换为后端版本号，如 1.0.10
+pnpm add @blade-hq/agent-kit@<version> react@^19.0.0 react-dom@^19.0.0 @tanstack/react-query@^5.0.0 sonner@^2.0.7
 ```
 
 ::: warning 版本要求
 - 必须使用 React 19，不支持 React 18
-- 不要写 `@blade-hq/agent-kit@^1.0.0`（不存在）
 - 不要用 `--force` 或 `--legacy-peer-deps` 绕过依赖检查
 :::
 
@@ -64,35 +50,49 @@ function App() {
 
 `baseUrl` 必须是后端 origin，不带 pathname。
 
+也可以用 `bootstrapBladeClient` 预创建 client 实例，适合需要在 Provider 外部访问 client 的场景：
+
+```tsx
+import { bootstrapBladeClient, BladeClientProvider } from "@blade-hq/agent-kit/react"
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
+
+const client = bootstrapBladeClient({
+  baseUrl: import.meta.env.VITE_BLADE_URL,
+  token: import.meta.env.VITE_BLADE_TOKEN,
+})
+const queryClient = new QueryClient()
+
+createRoot(document.getElementById("root")!).render(
+  <QueryClientProvider client={queryClient}>
+    <BladeClientProvider client={client}>
+      <App />
+    </BladeClientProvider>
+  </QueryClientProvider>,
+)
+```
+
 ## ChatView 最小示例
 
 ```tsx
-import { useMemo, useState } from "react"
-import { BladeClient } from "@blade-hq/agent-kit/client"
-import { BladeClientProvider, useSessionStore } from "@blade-hq/agent-kit/react"
+import { useState } from "react"
+import { sessionsApi, useSessionStore } from "@blade-hq/agent-kit/react"
 import { ChatView } from "@blade-hq/agent-kit/chat"
 import "@blade-hq/agent-kit/style.css"
 
 export function App() {
   const [sessionId, setSessionId] = useState<string | null>(null)
-  const client = useMemo(
-    () => new BladeClient({ baseUrl: "http://<host>:8020", token: () => token }),
-    [],
-  )
 
   async function createSession() {
-    const { session_id } = await client.sessions.createSession("我的任务")
+    const { session_id } = await sessionsApi.createSession("我的任务")
     setSessionId(session_id)
     useSessionStore.getState().setActiveSession(session_id)
   }
 
   return (
-    <BladeClientProvider baseUrl="http://<host>:8020" token={() => token}>
-      <main style={{ height: "100vh", display: "flex", flexDirection: "column", minHeight: 0 }}>
-        <button onClick={createSession}>新建会话</button>
-        {sessionId ? <ChatView sessionId={sessionId} /> : null}
-      </main>
-    </BladeClientProvider>
+    <main style={{ height: "100vh", display: "flex", flexDirection: "column", minHeight: 0 }}>
+      <button onClick={createSession}>新建会话</button>
+      {sessionId ? <ChatView sessionId={sessionId} /> : null}
+    </main>
   )
 }
 ```

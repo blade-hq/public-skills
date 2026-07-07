@@ -4,7 +4,7 @@ SDK 的所有请求（REST 和 Socket.IO）都用同一个 Bearer Token 鉴权�
 
 ## 创建 API Key
 
-登录 Blade Agent Web UI（`http://<host>:8020`）-> 账号/设置 -> 创建 API Key -> 复制 `sk-blade-v2-...` 格式的密钥。
+登录 Blade Agent Web UI（`http://<host>:8020`）-> 进入 `/env` 页面 -> 创建 API Token -> 复制 `sk-blade-v3-...` 格式的密钥。
 
 ```
 ┌─────────────────────────────────────────────┐
@@ -13,7 +13,7 @@ SDK 的所有请求（REST 和 Socket.IO）都用同一个 Bearer Token 鉴权�
 │  API Keys                                   │
 │  ┌─────────────────────────────────────────┐ │
 │  │ 名称           密钥              操作    │ │
-│  │ my-backend     sk-blade-v2-***   [删除]  │ │
+│  │ my-backend     sk-blade-v3-***   [删除]  │ │
 │  │                                         │ │
 │  │              [+ 创建 API Key]            │ │
 │  └─────────────────────────────────────────┘ │
@@ -27,7 +27,7 @@ import { BladeClient } from "@blade-hq/agent-kit/client"
 
 const client = new BladeClient({ baseUrl: "http://<host>:8020" })
 const { plaintext } = await client.apiKeys.createApiKey("my-backend")
-// plaintext 形如 "sk-blade-v2-..."，交给后端保存
+// plaintext 形如 "sk-blade-v3-..."，交给后端保存
 ```
 
 ::: warning
@@ -45,7 +45,7 @@ import { BladeClient } from "@blade-hq/agent-kit/client"
 
 const client = new BladeClient({
   baseUrl: "http://<host>:8020",
-  token: "sk-blade-v2-...",
+  token: "sk-blade-v3-...",
 })
 ```
 
@@ -65,7 +65,7 @@ from blade_agent_kit import BladeAgentClient
 
 client = BladeAgentClient(
     "http://<host>:8020",
-    token="sk-blade-v2-...",  # 不传则读环境变量 BLADE_AGENT_TOKEN
+    token="sk-blade-v3-...",  # 不传则读环境变量 BLADE_AGENT_TOKEN
 )
 ```
 
@@ -78,5 +78,5 @@ client = BladeAgentClient(
 | 问题 | 原因与修复 |
 | --- | --- |
 | REST 通但 Socket 不连 | REST 和 Socket.IO 共用同一个 token，确认用同一个 `BladeClient` 实例；换 token 后要重连 socket |
-| 401 | Token 未注入或格式错误，确认 token 格式为 `sk-blade-v2-...` |
+| 401 | Token 未注入或格式错误，确认 token 格式为 `sk-blade-v3-...` |
 | 本地 mock 环境 | 访问 `/api/auth/login` 签发登录态，再创建 API Key |

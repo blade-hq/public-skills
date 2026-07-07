@@ -229,9 +229,9 @@ export default defineConfig({
       { text: "应用接入", link: "/integration/concepts" },
       { text: "部署与运维", link: "/ops/docker" },
       {
-        text: "v0.5.16",
+        text: "v1.0.x",
         items: [
-          { text: "v0.5.16（当前）", link: "/" },
+          { text: "v1.0.x（当前）", link: "/" },
         ],
       },
     ],
