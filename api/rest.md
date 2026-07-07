@@ -1,7 +1,7 @@
 # REST API 接口
 
 基础路径：`/api`  
-认证：`Authorization: Bearer sk-blade-v2-...`
+认证：`Authorization: Bearer sk-blade-v3-...`
 
 ## 接口总览
 
@@ -1562,7 +1562,7 @@ Solution 目录。
   {
     "id": "key_xxx",
     "name": "My Key",
-    "masked": "sk-blade-v2-...xxxx",
+    "masked": "sk-blade-v3-...xxxx",
     "plaintext": null,
     "created_at": "2026-01-01T00:00:00Z",
     "last_used_at": "2026-01-02T00:00:00Z"
@@ -1591,12 +1591,12 @@ Solution 目录。
   "key": {
     "id": "key_xxx",
     "name": "My Backend Key",
-    "masked": "sk-blade-v2-...xxxx",
+    "masked": "sk-blade-v3-...xxxx",
     "plaintext": null,
     "created_at": "2026-01-01T00:00:00Z",
     "last_used_at": null
   },
-  "plaintext": "sk-blade-v2-xxxxxxxxxxxxxxxx"
+  "plaintext": "sk-blade-v3-xxxxxxxxxxxxxxxx"
 }
 ```
 

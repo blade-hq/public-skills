@@ -1,5 +1,29 @@
 # 核心概念
 
+## 快速开始
+
+::: tip SDK 版本必须和后端版本一致
+安装 SDK 时，版本号要和 Blade Agent 后端版本对应。后端版本号在 Web UI 左上角 logo 旁查看：
+
+![后端版本号位置](/images/ba-version-location.png)
+
+例如后端是 `v1.0.10`，前端 SDK 就装 `@blade-hq/agent-kit@1.0.10`，Python SDK 就装 `blade-agent-kit==1.0.10`。
+:::
+
+下载示例工程，填入后端地址和 Token 即可运行：
+
+| 示例 | 下载 | 说明 |
+|------|------|------|
+| React | [examples-react.zip](/downloads/examples-react.zip) | Vite + React 19，内置 ChatView |
+| Vue | [examples-vue.zip](/downloads/examples-vue.zip) | Vite + Vue 3，使用 /client 自建 UI |
+| Python | [examples-python.zip](/downloads/examples-python.zip) | 异步脚本：流式对话、Headless、文件上传 |
+
+下载后参照 `.env.example` 配置后端地址和 API Token，然后 `pnpm install && pnpm dev`（前端）或 `pip install -r requirements.txt && python quickstart.py`（Python）。
+
+::: warning 端口
+后端地址必须用 `:8020` 端口（`http://<host>:8020`）。同主机 `:80` 端口是 Blade OS，API 前缀为 `/api/v1/*`，与 SDK 不兼容。
+:::
+
 ## 会话（Session）
 
 会话是一次智能体交互的完整上下文。每个会话有唯一的 `session_id`，包含消息历史、工具调用记录和工作区文件。
@@ -21,12 +45,12 @@ await client.sessions.uploadFiles(session_id, ".", [
 
 ## 访问凭证（Token）
 
-SDK 使用 Bearer Token 鉴权。通过 API Key（`sk-blade-v2-...`）进行身份验证，长期有效，由已登录用户通过 Web UI 或 SDK 创建。
+SDK 使用 Bearer Token 鉴权。通过 API Key（`sk-blade-v3-...`）进行身份验证，长期有效，由已登录用户通过 Web UI 或 SDK 创建。
 
 ```ts
 const client = new BladeClient({
   baseUrl: "http://<host>:8020",
-  token: "sk-blade-v2-...",
+  token: "sk-blade-v3-...",
 })
 ```
 
@@ -57,7 +81,7 @@ Blade Agent API 基础地址：`http://<host>:8020`
 └──────┬───────┘         └────────┬─────────┘         └──────┬───────┘
        │                          │                          │
        │  1. 准备 API Key         │                          │
-       │  sk-blade-v2-...         │                          │
+       │  sk-blade-v3-...         │                          │
        │                          │                          │
        │  2. new BladeClient()    │                          │
        │─────────────────────────>│                          │

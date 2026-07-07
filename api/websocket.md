@@ -10,7 +10,7 @@
 
 ```json
 {
-  "token": "sk-blade-v2-xxxxxxxxxx"
+  "token": "sk-blade-v3-xxxxxxxxxx"
 }
 ```
 

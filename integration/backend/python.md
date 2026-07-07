@@ -1,12 +1,23 @@
 # Python 后端接入
 
+::: tip 完整示例工程
+[下载 examples-python.zip](/downloads/examples-python.zip) — 包含 quickstart、headless、文件上传三个可运行脚本。
+:::
+
 ## 安装
 
+版本号需和 Blade Agent 后端一致（[如何查看](/integration/concepts#快速开始)）：
+
 ```bash
-pip install blade-agent-kit
+# 将 <version> 替换为后端版本号，如 1.0.10
+pip install blade-agent-kit==<version>
 # 或
-uv add blade-agent-kit
+uv add blade-agent-kit==<version>
 ```
+
+::: warning Python 版本
+SDK 要求 `>=3.12, <3.13`。使用 3.13 或更高版本会安装失败。建议用 `uv venv --python 3.12` 创建独立环境。
+:::
 
 import 名是 `blade_agent_kit`。客户端是异步的，所有网络方法都需要 `await`。
 
@@ -17,7 +28,7 @@ from blade_agent_kit import BladeAgentClient
 
 async with BladeAgentClient(
     "http://127.0.0.1:8020",          # 后端 origin
-    token="sk-blade-v2-...",          # 不传则读环境变量 BLADE_AGENT_TOKEN
+    token="sk-blade-v3-...",          # 不传则读环境变量 BLADE_AGENT_TOKEN
 ) as client:
     print(await client.health())
 ```

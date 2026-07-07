@@ -23,7 +23,7 @@ wss://blade.example.com/socket.io/
 在请求头中携带：
 
 ```
-Authorization: Bearer sk-blade-v2-xxxxxxxxxx
+Authorization: Bearer sk-blade-v3-xxxxxxxxxx
 ```
 
 ### Socket.IO 连接
@@ -32,7 +32,7 @@ Authorization: Bearer sk-blade-v2-xxxxxxxxxx
 
 ```json
 {
-  "token": "sk-blade-v2-xxxxxxxxxx"
+  "token": "sk-blade-v3-xxxxxxxxxx"
 }
 ```
 
@@ -40,7 +40,7 @@ Authorization: Bearer sk-blade-v2-xxxxxxxxxx
 
 | 类型 | 格式 | 说明 |
 |------|------|------|
-| API Key | `sk-blade-v2-...` | 长期有效，推荐后端服务使用 |
+| API Key | `sk-blade-v3-...` | 长期有效，推荐后端服务使用 |
 | Session JWT | JWT 字符串 | 短期有效，浏览器同源场景 |
 
 API Key 通过 Web 管理界面创建，或调用 `POST /api/user/api-keys/` 接口创建。明文仅在创建时返回一次。

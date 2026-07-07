@@ -73,7 +73,7 @@ if (result.failed?.length) {
 ```http
 POST /api/sessions/{session_id}/upload/{dir_path}
 Content-Type: multipart/form-data
-Authorization: Bearer sk-blade-v2-...
+Authorization: Bearer sk-blade-v3-...
 ```
 
 FormData 字段：
