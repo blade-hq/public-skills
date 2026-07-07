@@ -1,7 +1,7 @@
 # Python 后端接入
 
 ::: tip 完整示例工程
-[下载 examples-python.zip](/public-skills/downloads/examples-python.zip) — 包含 quickstart、headless、文件上传三个可运行脚本。
+[下载 examples-python.zip](/downloads/examples-python.zip) — 包含 quickstart、headless、文件上传三个可运行脚本。
 :::
 
 ## 安装

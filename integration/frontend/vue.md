@@ -1,7 +1,7 @@
 # Vue 接入
 
 ::: tip 完整示例工程
-[下载 examples-vue.zip](/public-skills/downloads/examples-vue.zip) — Vite + Vue 3 可运行工程，填好 `.env.local` 即可 `pnpm dev`。
+[下载 examples-vue.zip](/downloads/examples-vue.zip) — Vite + Vue 3 可运行工程，填好 `.env.local` 即可 `pnpm dev`。
 :::
 
 Vue 不能直接使用 `ChatView`（React 组件），需要用 `@blade-hq/agent-kit/client` 和底层 Socket.IO 自行渲染。

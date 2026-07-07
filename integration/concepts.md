@@ -14,9 +14,9 @@
 
 | 示例 | 下载 | 说明 |
 |------|------|------|
-| React | [examples-react.zip](/public-skills/downloads/examples-react.zip) | Vite + React 19，内置 ChatView |
-| Vue | [examples-vue.zip](/public-skills/downloads/examples-vue.zip) | Vite + Vue 3，使用 /client 自建 UI |
-| Python | [examples-python.zip](/public-skills/downloads/examples-python.zip) | 异步脚本：流式对话、Headless、文件上传 |
+| React | [examples-react.zip](/downloads/examples-react.zip) | Vite + React 19，内置 ChatView |
+| Vue | [examples-vue.zip](/downloads/examples-vue.zip) | Vite + Vue 3，使用 /client 自建 UI |
+| Python | [examples-python.zip](/downloads/examples-python.zip) | 异步脚本：流式对话、Headless、文件上传 |
 
 下载后参照 `.env.example` 配置后端地址和 API Token，然后 `pnpm install && pnpm dev`（前端）或 `pip install -r requirements.txt && python quickstart.py`（Python）。
 

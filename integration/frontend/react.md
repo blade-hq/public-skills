@@ -1,7 +1,7 @@
 # React 接入
 
 ::: tip 完整示例工程
-[下载 examples-react.zip](/public-skills/downloads/examples-react.zip) — Vite + React 19 可运行工程，填好 `.env.local` 即可 `pnpm dev`。
+[下载 examples-react.zip](/downloads/examples-react.zip) — Vite + React 19 可运行工程，填好 `.env.local` 即可 `pnpm dev`。
 :::
 
 ## 安装与依赖
