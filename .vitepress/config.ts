@@ -25,8 +25,10 @@ const integrationSidebar = [
     items: [
       { text: "React", link: "/integration/frontend/react" },
       { text: "Vue", link: "/integration/frontend/vue" },
+      { text: "登录配置", link: "/integration/frontend/login" },
       { text: "聊天 UI 与自渲染", link: "/integration/frontend/chat-ui" },
-      { text: "宿主页面联动", link: "/integration/frontend/host-integration" },
+      { text: "页面协作（地图联动等）", link: "/integration/frontend/host-integration" },
+      { text: "iframe 嵌入", link: "/integration/frontend/embedded" },
     ],
   },
   {

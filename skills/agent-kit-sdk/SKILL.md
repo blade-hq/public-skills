@@ -1,137 +1,98 @@
 ---
 name: agent-kit-sdk
-description: "Agent Kit 集成目录：按 React、Vue 前端与 Node.js、Python 后端引导接入 Blade Agent。"
+description: "Blade 前端 SDK 集成：@blade-hq/agent-client（框架无关核心）与 @blade-hq/agent-react（React 绑定）。按 React、Vue、Node.js、iframe 嵌入场景引导接入。"
 ---
 
-# Agent Kit 集成目录
+# Blade 前端 SDK 集成
 
-本文件只做目录导航。根据宿主技术栈选择要读的文档。
+Blade 前端 SDK 由两个 npm 包组成：
+
+| 包 | 定位 | 运行环境 |
+| --- | --- | --- |
+| `@blade-hq/agent-client` | 框架无关核心：连接、登录、实时会话状态机、REST 通道、页面协作 | 浏览器 / Node.js 18+ 通用，运行时依赖只有 socket.io-client 与 arktype |
+| `@blade-hq/agent-react` | React 绑定：`BladeProvider`、`useChat` 等 hooks、现成的 `ChatView` 聊天组件 | React 18 / 19 |
+
+旧包 `@blade-hq/agent-kit` 已废弃，所有 `@blade-hq/agent-kit/client`、`/react`、`/chat` 入口不再使用。
 
 ## 使用规则
 
-如果你不确定某个 SDK 入口、方法名、事件名、REST 路径、依赖版本或返回字段，必须先回到本技能的 reference 文档查找确认；不要按常见框架经验猜测 Blade API。文档没有明确写出的 Blade endpoint、SDK 方法或包入口，不要自行发明。
+如果你不确定某个 SDK 入口、方法名、事件名、REST 路径或返回字段，必须先回到本技能的 reference 文档查找确认；不要按常见框架经验猜测 Blade API。文档没有明确写出的 Blade 接口、SDK 方法或包入口，不要自行发明。
 
-交付前必须自检：列出你实际采用的 SDK 包入口、依赖版本、session 创建方法、文件上传方法、任务发送方式和事件监听方式；这些项目必须能在本技能文档中找到依据。任一项找不到依据时，先继续查文档或改用文档中的示例，不要交付猜测实现。
+其余不常用的接口（SDK 未提供类型化方法的）统一用 `client.api.get/post/...` 调用，路径和请求体对照后端 Swagger（`<后端地址>/docs`）确认。
 
-Node.js 后端应用必须使用 `@blade-hq/agent-kit@0.5.11` 和 `@blade-hq/agent-kit/client`。`docs/rest-api.md`、`docs/websocket-api.md` 等底层协议文档只用于查证 SDK 背后的公开 endpoint 和事件；除非用户明确要求“不要使用 SDK，直接协议接入”，否则不能用 `axios`、`fetch` 或裸 `socket.io-client` 替代 Node SDK。`DOCS_AUDIT.md` 的 SDK 包入口不能写“无特定 SDK”。
+## 先跑起来（React）
 
-## 版本要求
+React 应用嵌一个完整聊天界面，这些就够了——不用先研究鉴权：
 
-本技能基于以下版本或以上：
-
-- 阿里云镜像：`registry.cn-beijing.aliyuncs.com/bladeai/blade-agent:v0.4.17`
-- NPM：`@blade-hq/agent-kit@0.5.11`
-- React peer dependencies：`react@^19.0.0`、`react-dom@^19.0.0`、`@tanstack/react-query@^5.0.0`、`sonner@^2.0.7`
-- PyPI：`blade-agent-kit==0.4.17`
-
-低于上述版本时，部分 API、样式入口或 skills 行为可能不一致，请先升级再按本技能集成。
-
-## 第一步：拿到 token（所有场景必读）
-
-SDK 的所有 REST 和 Socket.IO 请求都需要 Bearer token，且 **API key 必须先登录才能创建**。开始集成前先读：
-
-- [references/auth-token.md](references/auth-token.md)：token 类型、创建 API key 的顺序、在 SDK 里注入 token。
-
-## React 应用
-
-React 应用可以直接复用 SDK 组件。
-
-阅读：
-
-- [references/react-quickstart.md](references/react-quickstart.md)：React 最小可复制模板。先看这份，避免 React 版本、包入口、依赖版本和端点写错。
-- [references/sdk-entrypoints.md](references/sdk-entrypoints.md)：安装、包入口、`BladeClient`、token、baseUrl。
-- [references/chat-ui.md](references/chat-ui.md)：`ChatView`、`BladeClientProvider`、组件自定义、headless hooks。
-- [references/events-and-types.md](references/events-and-types.md)：用 `useChat` headless 自渲染时，查 `ChatMessage` / 工具调用 / 事件字段。
-- [references/session-runtime.md](references/session-runtime.md)：session 创建、active session、Socket.IO、运行时 token。
-- [references/work-modes.md](references/work-modes.md)：规划模式与干活模式，`mode: "executing"` / `mode: "planning"` 的使用时机。
-- [references/file-upload.md](references/file-upload.md)：上传普通业务文件到 session workspace，并让 Agent 在干活模式读取处理。
-- [references/host-app-integration.md](references/host-app-integration.md)：宿主页面给 ChatView 加上下文、追加输入、接收工具触发的页面动作。
-- [references/session-skill-upload.md](references/session-skill-upload.md)：如果要把 skill 临时上传到指定 session，比如地图操控、查 CRM、生成订单，就读这份。
-- [references/troubleshooting.md](references/troubleshooting.md)：常见问题。
-
-## Vue 应用
-
-Vue 不能直接使用 React 版 `ChatView`，需要用 SDK client / socket 自己渲染聊天 UI。
-
-**完整示例项目**：[examples/vue-chat/](examples/vue-chat/)，包含流式对话、工具调用、AskUserQuestion 交互、子智能体渲染，可直接复制使用。
-
-阅读：
-
-- [references/sdk-entrypoints.md](references/sdk-entrypoints.md)：安装、`@blade-hq/agent-kit/client`、token、baseUrl。
-- [references/session-runtime.md](references/session-runtime.md)：session、Socket.IO 订阅、发送消息、流式事件。
-- [references/work-modes.md](references/work-modes.md)：自渲染前端发送任务时，如何显式进入干活模式。
-- [references/file-upload.md](references/file-upload.md)：用户上传 Markdown、文本、CSV 等普通业务文件后，如何放入 session workspace。
-- [references/chat-ui.md](references/chat-ui.md)：只看 headless 数据结构和自渲染要点，不使用 React 组件部分。
-- [references/events-and-types.md](references/events-and-types.md)：自渲染必读的事件 → payload 映射、TurnProjection / ContentBlock / 工具调用字段速查。
-- [references/host-app-integration.md](references/host-app-integration.md)：需要页面联动、上下文注入或工具 UI 时再读。
-- [references/session-skill-upload.md](references/session-skill-upload.md)：如果要把 skill 临时上传到指定 session，比如地图操控、查 CRM、生成订单，就读这份。
-- [references/troubleshooting.md](references/troubleshooting.md)：常见问题。
-
-## Node.js / Python 后端
-
-后端不渲染 UI，只通过网络调用：建会话、发消息拿结果、headless 一次性问答、读历史、上传 session skill。
-
-Node.js 后端的默认集成方式是 SDK，不是裸协议。先复制 [references/backend-quickstart.md](references/backend-quickstart.md) 的模板；`docs/` API 文档是补充查证资料，不是替代 SDK 的实现许可。
-
-阅读：
-
-- [references/backend-quickstart.md](references/backend-quickstart.md)：Node.js 后端最小可复制模板。先看这份，避免 `/api/v1/*`、JSON workspace 上传和 task polling 写错。
-- [references/backend.md](references/backend.md)：Node.js（`@blade-hq/agent-kit/client`）和 Python（`blade-agent-kit`）完整后端用法，含 headless、流式、会话与历史。
-- [references/sdk-entrypoints.md](references/sdk-entrypoints.md)：`@blade-hq/agent-kit/client` 包入口和基础配置（Node 适用）。
-- [references/work-modes.md](references/work-modes.md)：后端代用户发任务时，通常显式传 `mode: "executing"`。
-- [references/file-upload.md](references/file-upload.md)：普通文件上传到 session workspace；文档分析、表格分析、报告生成这类后端必读。
-- [references/session-skill-upload.md](references/session-skill-upload.md)：上传或管理指定 session 里的临时 skill。
-- [references/troubleshooting.md](references/troubleshooting.md)：鉴权、连接和 session skill 上传问题。
-
-后端如果要确认底层 HTTP / Socket.IO 协议，必须继续查 SDK API 文档：
-
-- [docs/README.md](docs/README.md)：API 文档目录和适用范围。
-- [docs/api-overview.md](docs/api-overview.md)：ASCII 路径；基础地址、认证和通用约定。
-- [docs/rest-api.md](docs/rest-api.md)：ASCII 路径；公开 HTTP endpoint 列表，确认 session、文件上传、历史等 REST 路径。
-- [docs/websocket-api.md](docs/websocket-api.md)：ASCII 路径；Socket.IO 连接、`session:subscribe`、`chat:send`、`turn:*`、`chat:end`、`system:error` 等事件。
-- [docs/chat-flow.md](docs/chat-flow.md)：ASCII 路径；流式聊天、工具调用、用户问答、子智能体流程。
-- [docs/core-types.md](docs/core-types.md)：ASCII 路径；事件 payload 和响应对象结构。
-- [docs/API概览.md](docs/API概览.md)：基础地址、认证和通用约定。
-- [docs/REST接口.md](docs/REST接口.md)：公开 HTTP endpoint 列表，确认 session、文件上传、历史等 REST 路径。
-- [docs/WebSocket接口.md](docs/WebSocket接口.md)：Socket.IO 连接、`session:subscribe`、`chat:send`、`turn:*`、`chat:end`、`system:error` 等事件。
-- [docs/Chat流程.md](docs/Chat流程.md)：流式聊天、工具调用、用户问答、子智能体流程。
-- [docs/核心类型.md](docs/核心类型.md)：事件 payload 和响应对象结构。
-
-交付后端代码前，必须能说明每个 Blade API 调用来自上述 reference 或 docs 文件中的哪一条依据。
-
-读取 `docs/` 文件时复制下面的精确路径；中文文件名中没有空格，例如是 `docs/API概览.md`，不是 `docs/API 概览.md`：
-
-```text
-docs/README.md
-docs/api-overview.md
-docs/rest-api.md
-docs/websocket-api.md
-docs/chat-flow.md
-docs/core-types.md
-docs/API概览.md
-docs/REST接口.md
-docs/WebSocket接口.md
-docs/Chat流程.md
-docs/核心类型.md
+```bash
+npm install @blade-hq/agent-client @blade-hq/agent-react react react-dom
 ```
 
-## 功能区域
+```tsx
+import { BladeClient } from "@blade-hq/agent-client"
+import { BladeProvider, ChatView } from "@blade-hq/agent-react"
+import "@blade-hq/agent-react/style.css"
 
-- Vue 完整示例（流式 + 工具 + 问答 + 子智能体）：[examples/vue-chat/](examples/vue-chat/)
-- 鉴权与 token：[references/auth-token.md](references/auth-token.md)
-- React 快速开始：[references/react-quickstart.md](references/react-quickstart.md)
-- 后端快速开始：[references/backend-quickstart.md](references/backend-quickstart.md)
-- 后端集成（Node.js / Python）：[references/backend.md](references/backend.md)
-- 底层 API 文档目录：[docs/README.md](docs/README.md)
-- REST / Socket.IO API 概览：[docs/API概览.md](docs/API概览.md)
-- REST endpoint 速查：[docs/REST接口.md](docs/REST接口.md)
-- Socket.IO 事件速查：[docs/WebSocket接口.md](docs/WebSocket接口.md)
-- SDK 入口：[references/sdk-entrypoints.md](references/sdk-entrypoints.md)
-- 聊天 UI 与自渲染：[references/chat-ui.md](references/chat-ui.md)
-- 事件与数据结构速查：[references/events-and-types.md](references/events-and-types.md)
-- 会话、鉴权与运行时：[references/session-runtime.md](references/session-runtime.md)
-- 规划模式与干活模式：[references/work-modes.md](references/work-modes.md)
-- 普通文件上传：[references/file-upload.md](references/file-upload.md)
-- 宿主页面联动：[references/host-app-integration.md](references/host-app-integration.md)
-- Session skill 上传：[references/session-skill-upload.md](references/session-skill-upload.md)
-- 故障排查：[references/troubleshooting.md](references/troubleshooting.md)
+// 建在组件外面：写进组件里的话每次重渲染都会新建 client、重连一次，聊天会疯狂闪断
+const client = new BladeClient({ baseUrl: "https://blade.example.com" })
+
+export default function App() {
+  // ChatView 会撑满父容器，父容器没高度就什么都看不见
+  return (
+    <div style={{ height: "100vh", display: "flex", flexDirection: "column", minHeight: 0 }}>
+      <BladeProvider client={client}>
+        <ChatView />
+      </BladeProvider>
+    </div>
+  )
+}
+```
+
+- `baseUrl` 填 **Blade Agent 后端**地址（形如 `http://<主机>:8020`，只要域名+端口，不带路径）。别填成你平时打开的 Blade OS 地址（同主机 `:80`）——那是另一套接口，SDK 连不上。
+- 不传 `sessionId` 会自动建新会话；用户没登录时 `ChatView` 自己显示登录按钮。
+- 页面与后端同域时，登录不用配任何东西。**只有部署到第三方域名**才需要读 [references/auth.md](references/auth.md)。
+
+## 选包决策树
+
+```
+你的场景是什么？
+│
+├─ React 应用，想直接嵌一个聊天界面
+│    → @blade-hq/agent-react 的 <ChatView>（见上面"先跑起来"）
+│    → 读 references/react.md
+│
+├─ React 应用，想自己画聊天 UI
+│    → @blade-hq/agent-react 的 useChat / useAgentSession
+│    → 读 references/react.md + references/client-core.md
+│      + references/message-rendering.md（必读：消息结构与渲染坑）
+│
+├─ Vue / Svelte / 无框架页面
+│    → @blade-hq/agent-client 的 AgentSession（getState/subscribe）
+│    → 读 references/vue.md + references/client-core.md
+│      + references/message-rendering.md（必读：消息结构与渲染坑）
+│
+├─ Node.js 后端 / 自动化脚本
+│    → @blade-hq/agent-client（headless.run、sessions、api）
+│    → 读 references/node.md
+│
+└─ 用 iframe 把 Blade 聊天页嵌进自己系统
+     → @blade-hq/agent-client 的 connectEmbedded()
+     → 读 references/embedded-iframe.md
+```
+
+## 参考文档
+
+- [references/client-core.md](references/client-core.md)：`BladeClient` 与 `AgentSession` 完整 API——连接、sessionId 从哪来、状态订阅、发送、事件监听。所有场景的基础。
+- [references/message-rendering.md](references/message-rendering.md)：**自建 UI 必读**——消息结构、多模态 content、工具调用渲染、四个 status 的区别、智能体反问时怎么作答。
+- [references/react.md](references/react.md)：React 接入——`BladeProvider`、`ChatView`、`useChat`、`useAgentSession`、`useAuth`、样式与预览组件。
+- [references/vue.md](references/vue.md)：Vue 接入——`useAgentSession` composable 参考实现、流式渲染、工具调用消费。
+- [references/node.md](references/node.md)：Node.js / 自动化——`headless.run` 一次性问答、会话管理、文件上传。
+- [references/auth.md](references/auth.md)：三种登录方式对比、访问令牌、后端 `BLADE_SDK_AUTH_ALLOWED_ORIGINS` 配置。**部署到第三方域名时才需要读。**
+- [references/page-collaboration.md](references/page-collaboration.md)：页面协作——智能体驱动页面（`onCommand`）、页面反向注入（`attach` / `insertText`）、action 契约的来源。
+- [references/embedded-iframe.md](references/embedded-iframe.md)：iframe 嵌入形态——`connectEmbedded` 用法与安全要求。
+- [references/rest-api.md](references/rest-api.md)：REST 通道——类型化资源方法速查 + `client.api` 其余不常用的接口调用。
+- [references/troubleshooting.md](references/troubleshooting.md)：常见报错 → 原因 → 修复。
+
+## 交付自检
+
+交付前列出你实际采用的：包名与入口、client 构造方式、鉴权方式、会话创建/连接方法、消息发送方式、事件消费方式。每一项都必须能在上述 reference 文档中找到依据；任一项找不到依据时，先查文档或改用文档中的示例，不要交付猜测实现。

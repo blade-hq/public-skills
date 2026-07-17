@@ -136,4 +136,4 @@ await client.delete_session(session_id)
 | --- | --- |
 | 只要最终结果（问答、抽取、批处理） | Headless |
 | 要展示中间过程、工具调用、逐字输出 | 流式 `client.chat()` |
-| UI 交给浏览器，后端只做编排 | 后端 Headless，前端 `@blade-hq/agent-kit` |
+| UI 交给浏览器，后端只做编排 | 后端 Headless，前端 `@blade-hq/agent-client` / `@blade-hq/agent-react` |

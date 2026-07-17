@@ -7,11 +7,12 @@
 ### Node.js
 
 ```ts
-import { BladeClient } from "@blade-hq/agent-kit/client"
+import { BladeClient } from "@blade-hq/agent-client"
 
 const client = new BladeClient({ baseUrl, token })
 
-const { session_id } = await client.sessions.createSession("用户任务", {
+const { session_id } = await client.sessions.createSessionWithRequest({
+  intent: "用户任务",
   solution_id: "my-solution",
   biz_role_id: "analyst",
 })
@@ -52,7 +53,8 @@ initial_mode: executing
 示例——创建技能编辑器会话：
 
 ```ts
-const { session_id } = await client.sessions.createSession("技能编辑", {
+const { session_id } = await client.sessions.createSessionWithRequest({
+  intent: "技能编辑",
   solution_id: "skill_editor",
 })
 ```
