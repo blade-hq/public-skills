@@ -154,31 +154,35 @@ app.post("/api/sessions/:session_id/chat", async (req, res) => {
   }
   res.write(`event: connected\ndata: {"ok":true}\n\n`)   // 立刻写出，避免网关超时
 
-  const chat = await client.sessions.connect(session_id)
-  const heartbeat = setInterval(() => send("heartbeat", { ts: Date.now() }), 15000)
   let finished = false
-
-  const offs = [
-    chat.on("message", (e) => send("message", e.message)),
-    chat.on("toolCall", (e) => send("toolCall", e.toolCall)),
-    chat.on("toolResult", (e) => send("toolResult", e.toolCall)),
-    chat.on("error", (e) => { send("error", e); finish() }),
-    chat.on("chatEnd", (e) => { send("chatEnd", e); finish() }),
-  ]
+  let heartbeat: ReturnType<typeof setInterval> | undefined
+  const offs: Array<() => void> = []
 
   function finish() {
     if (finished) return
     finished = true
-    clearInterval(heartbeat)
+    if (heartbeat) clearInterval(heartbeat)
     for (const off of offs) off()
     if (!res.writableEnded) res.end()
   }
   res.on("close", finish)
 
   try {
+    const chat = await client.sessions.connect(session_id)
+    if (finished) return
+    heartbeat = setInterval(() => send("heartbeat", { ts: Date.now() }), 15000)
+    offs.push(
+      chat.on("message", (e) => send("message", e.message)),
+      chat.on("toolCall", (e) => send("toolCall", e.toolCall)),
+      chat.on("toolResult", (e) => send("toolResult", e.toolCall)),
+      chat.on("error", (e) => { send("error", e); finish() }),
+      chat.on("chatEnd", (e) => { send("chatEnd", e); finish() }),
+    )
     await chat.send(message, { mode: "executing" })
   } catch (error) {
-    send("error", { message: error instanceof Error ? error.message : String(error) })
+    if (!finished) {
+      send("error", { message: error instanceof Error ? error.message : String(error) })
+    }
     finish()
   }
 })

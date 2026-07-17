@@ -44,8 +44,8 @@ await client.upload_file(session_id, "local/report.md", dir_path="uploads", remo
 ## Node.js SDK
 
 ```ts
+import { File } from "node:buffer"
 import { readFile } from "node:fs/promises"
-import { basename } from "node:path"
 import { BladeClient } from "@blade-hq/agent-client"
 
 const client = new BladeClient({
@@ -53,7 +53,7 @@ const client = new BladeClient({
   token: process.env.BLADE_AGENT_TOKEN!,
 })
 
-const { session_id } = await client.sessions.createSession("文档分析")
+const { session_id } = await client.sessions.createSessionWithRequest({ intent: "文档分析" })
 
 const result = await client.sessions.uploadFiles(session_id, ".", [
   { file: new File([await readFile("report.md")], "report.md"), name: "report.md" },
