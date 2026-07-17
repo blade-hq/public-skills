@@ -93,17 +93,31 @@ Node 里同样可以用会话对象，API 与浏览器完全一致：
 
 ```ts
 const chat = await client.sessions.create({ intent: "数据分析" })
+let cleaned = false
+const cleanup = () => {
+  if (cleaned) return
+  cleaned = true
+  chat.dispose()
+  client.socket().disconnect()
+}
 
 chat.on("toolCall", ({ toolCall }) => console.log("工具:", toolCall.name))
 chat.on("message", ({ message }) => console.log("消息:", message.content))
 chat.on("chatEnd", ({ status }) => {
   console.log("完成:", status)   // completed / failed / interrupted / paused
-  chat.dispose()
-  client.socket().disconnect()
+  cleanup()
 })
-chat.on("error", ({ message }) => console.error(message))
+chat.on("error", ({ message }) => {
+  console.error(message)
+  cleanup()
+})
 
-await chat.send("统计工作区里 CSV 的行数", { mode: "executing" })
+try {
+  await chat.send("统计工作区里 CSV 的行数", { mode: "executing" })
+} catch (error) {
+  console.error(error)
+  cleanup()
+}
 ```
 
 ## 会话管理（REST）

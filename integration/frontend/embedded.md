@@ -9,7 +9,7 @@ npm install @blade-hq/agent-client
 ## 最小示例
 
 ```html
-<iframe id="blade" src="https://blade.example.com/chat" style="width: 480px; height: 100%; border: 0"></iframe>
+<iframe id="blade" src="https://blade.example.com/chat" style="width: 480px; height: 100vh; border: 0"></iframe>
 ```
 
 ```ts
