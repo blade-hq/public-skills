@@ -22,7 +22,7 @@ await client.sessions.listSessionsPaginated({ limit: 20, offset: 0, q: "关键�
 await client.sessions.getSession(sessionId)
 await client.sessions.updateSession(sessionId, { intent: "新标题" })
 await client.sessions.deleteSession(sessionId)
-await client.sessions.getSessionTurns(sessionId)      // 历史消息（与实时收到的结构一致）
+await client.sessions.getSessionTurns(sessionId)      // 原始 TurnProjection 历史，字段不同于实时 messages
 await client.sessions.getSessionContextStats(sessionId)
 await client.sessions.getSessionTasks(sessionId)
 ```
@@ -115,14 +115,26 @@ const blob = await resp.blob()
 ```ts
 import { BladeApiError } from "@blade-hq/agent-client"
 
-try {
-  await client.api.get("/api/skills")
-} catch (error) {
-  if (error instanceof BladeApiError && error.status === 401) {
-    await client.auth.login()   // 浏览器：重新登录
+const loginButton = document.querySelector<HTMLButtonElement>("#login")!
+
+async function loadSkills() {
+  try {
+    return await client.api.get("/api/skills")
+  } catch (error) {
+    if (error instanceof BladeApiError && error.status === 401) {
+      loginButton.hidden = false
+      return null
+    }
+    throw error
   }
-  throw error
 }
+
+// 登录弹窗必须从点击等用户手势中打开，不能直接在 401 的异步回调里调用
+loginButton.addEventListener("click", async () => {
+  await client.auth.login()
+  loginButton.hidden = true
+  await loadSkills()
+})
 ```
 
 ::: warning 不要绕过 SDK 用裸 fetch

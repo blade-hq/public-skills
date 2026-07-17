@@ -22,28 +22,30 @@ const client = new BladeClient({
 最省事的后端入口：自动建会话、跑完、返回最终结果，中间过程不落 UI。
 
 ```ts
-// 纯文本结果
-const reply = await client.headless.run("用一句话总结这段话的要点：……")
-console.log(reply)  // string
+try {
+  // 纯文本结果
+  const reply = await client.headless.run("用一句话总结这段话的要点：……")
+  console.log(reply)  // string
 
-// 结构化结果：传 JSON Schema，返回符合 schema 的对象
-const data = await client.headless.run<{ company: string; amount: number }>(
-  "提取公司名和合同金额：……",
-  {
-    schema: {
-      type: "object",
-      properties: {
-        company: { type: "string" },
-        amount: { type: "number" },
+  // 结构化结果：传 JSON Schema，返回符合 schema 的对象
+  const data = await client.headless.run<{ company: string; amount: number }>(
+    "提取公司名和合同金额：……",
+    {
+      schema: {
+        type: "object",
+        properties: {
+          company: { type: "string" },
+          amount: { type: "number" },
+        },
+        required: ["company", "amount"],
       },
-      required: ["company", "amount"],
     },
-  },
-)
-console.log(data.company, data.amount)
-
-// 脚本结束前必须断开实时连接，否则 Node 进程不会退出
-client.socket().disconnect()
+  )
+  console.log(data.company, data.amount)
+} finally {
+  // 成功、超时或失败都必须断开，否则 Node 进程不会退出
+  client.socket().disconnect()
+}
 ```
 
 选项：`schema`（JSON Schema 对象）、`model`（模型覆盖）、`timeoutMs`（默认 300000）。
@@ -88,7 +90,7 @@ chat.on("error", ({ message }) => {
 })
 
 try {
-  await chat.send("统计工作区里 CSV 的行数")
+  await chat.send("统计工作区里 CSV 的行数", { mode: "executing" })
 } catch (error) {
   console.error(error)
   cleanup()
