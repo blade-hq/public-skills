@@ -28,7 +28,7 @@ chat.dispose()
 完整 HTML：
 
 ```html
-<iframe id="blade" src="https://blade.example.com/chat" style="width: 480px; height: 100%; border: 0"></iframe>
+<iframe id="blade" src="https://blade.example.com/chat" style="width: 480px; height: 100vh; border: 0"></iframe>
 ```
 
 ## 参数

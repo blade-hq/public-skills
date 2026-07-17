@@ -129,14 +129,14 @@ import { computed, ref } from "vue"
 import { client } from "./blade-client"   // 上一节里建好的 client（模块作用域）
 import { useAgentSession } from "./composables/useAgentSession"
 
-const { state, send, stop } = useAgentSession(client)
+const { session, state, send, stop } = useAgentSession(client)
 const draft = ref("")
 
 // kind 非空的是内部消息（模式切换、上下文压缩记录等），不是聊天正文，要过滤掉
 const visibleMessages = computed(() => state.value.messages.filter((m) => !m.kind))
 
 function submit() {
-  if (!draft.value.trim()) return
+  if (!session.value || !draft.value.trim()) return
   send(draft.value, { mode: "executing" })   // 要智能体动手干活就显式传
   draft.value = ""
 }
@@ -170,7 +170,7 @@ function submit() {
 
     <p v-if="state.errorMessage" class="error">{{ state.errorMessage }}</p>
 
-    <input v-model="draft" :disabled="state.isStreaming" @keydown.enter="submit" placeholder="输入消息..." />
+    <input v-model="draft" :disabled="!session || state.isStreaming" @keydown.enter="submit" placeholder="输入消息..." />
     <button v-if="state.isStreaming" @click="stop">停止</button>
   </div>
 </template>
@@ -206,14 +206,19 @@ import { useAgentSession } from "./composables/useAgentSession"
 
 const { session } = useAgentSession(client, sessionId)
 
-watch(session, (chat) => {
+watch(session, (chat, _previousChat, onCleanup) => {
   if (!chat) return
-  chat.on("toolCall", ({ toolCall }) => console.log("调用工具:", toolCall.name))
-  chat.on("toolResult", ({ toolCall }) => {
-    if (toolCall.name.endsWith("WriteOrder")) refreshOrders()
+  const offs = [
+    chat.on("toolCall", ({ toolCall }) => console.log("调用工具:", toolCall.name)),
+    chat.on("toolResult", ({ toolCall }) => {
+      if (toolCall.name.endsWith("WriteOrder")) refreshOrders()
+    }),
+    chat.on("chatEnd", ({ status }) => console.log("回复结束:", status)),
+    chat.on("error", ({ message }) => console.error(message)),
+  ]
+  onCleanup(() => {
+    for (const off of offs) off()
   })
-  chat.on("chatEnd", ({ status }) => console.log("回复结束:", status))
-  chat.on("error", ({ message }) => console.error(message))
 })
 ```
 

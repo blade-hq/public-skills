@@ -30,12 +30,18 @@ SDK 的所有请求（REST 接口与实时通道）都用同一套凭证。
 
 **方式二：在浏览器里弹窗登录一次**
 
+```html
+<button id="login">登录 Blade 并获取令牌</button>
+```
+
 ```ts
 import { BladeClient } from "@blade-hq/agent-client"
 
 const client = new BladeClient({ baseUrl: "http://<host>:8020" })
-const { token } = await client.auth.login()   // 用户点"许可授权"后返回，30 天有效
-// 把 token 交给后端保存
+document.querySelector("#login")!.addEventListener("click", async () => {
+  const { token } = await client.auth.login()   // 用户点"许可授权"后返回，30 天有效
+  // 把 token 交给后端保存
+})
 ```
 
 ::: warning

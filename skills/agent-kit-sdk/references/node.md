@@ -68,16 +68,31 @@ Node 里同样可以用 `AgentSession`（与浏览器 API 完全一致）：
 
 ```ts
 const chat = await client.sessions.create({ intent: "数据分析" })
+let cleaned = false
+const cleanup = () => {
+  if (cleaned) return
+  cleaned = true
+  chat.dispose()
+  client.socket().disconnect()
+}
 
 chat.on("toolCall", ({ toolCall }) => console.log("工具:", toolCall.name))
 chat.on("message", ({ message }) => console.log("消息:", message.content))
 chat.on("chatEnd", ({ status }) => {
   console.log("完成:", status)
-  chat.dispose()
-  client.socket().disconnect()
+  cleanup()
+})
+chat.on("error", ({ message }) => {
+  console.error(message)
+  cleanup()
 })
 
-await chat.send("统计工作区里 CSV 的行数")
+try {
+  await chat.send("统计工作区里 CSV 的行数")
+} catch (error) {
+  console.error(error)
+  cleanup()
+}
 ```
 
 ## 会话管理与文件
@@ -106,7 +121,8 @@ if (result.failed?.length) throw new Error(`上传失败: ${result.failed}`)
 上传后在消息里写清文件路径，让智能体读取处理：
 
 ```ts
-await chat.send("请读取工作区里的 report.md，提取标题和风险列表。")
+await client.headless.runInSession(session_id, "请读取工作区里的 report.md，提取标题和风险列表。")
+client.socket().disconnect()
 ```
 
 其余 REST 接口（技能、模型、其余不常用的接口）见 [rest-api.md](rest-api.md)。
