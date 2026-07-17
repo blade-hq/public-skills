@@ -156,9 +156,19 @@ const client = new BladeClient({
   token: process.env.BLADE_AGENT_TOKEN!,
 })
 
+// AgentSession 是按 session_id 复用的事件总线。同一会话只允许一个活跃 SSE，
+// 避免并发请求互相收到消息，或被另一请求的 chatEnd 提前关闭。
+const activeSessionStreams = new Set<string>()
+
 app.post("/api/sessions/:session_id/chat", async (req, res) => {
   const { session_id } = req.params
   const { message } = req.body
+
+  if (activeSessionStreams.has(session_id)) {
+    res.status(409).json({ error: "该会话已有任务正在运行，请等待完成后重试" })
+    return
+  }
+  activeSessionStreams.add(session_id)
 
   res.writeHead(200, {
     "Content-Type": "text/event-stream",
@@ -179,6 +189,7 @@ app.post("/api/sessions/:session_id/chat", async (req, res) => {
     finished = true
     if (heartbeat) clearInterval(heartbeat)
     for (const off of offs) off()
+    activeSessionStreams.delete(session_id)
     if (!res.writableEnded) res.end()
   }
   res.on("close", finish)
@@ -204,4 +215,4 @@ app.post("/api/sessions/:session_id/chat", async (req, res) => {
 })
 ```
 
-要点：`res.writeHead` 后立刻写出第一个事件；至少转发 `message` / `toolCall` / `chatEnd` / `error`；用 heartbeat 保活；在 `chatEnd`、错误路径、`res.close` 里都要移除**当前请求**注册的监听器。`connect(session_id)` 会复用同一 client 缓存的会话实例，因此单个 SSE 请求结束时不要调用 `chat.dispose()`，否则会同时中断仍在使用该会话的其他请求。
+要点：`res.writeHead` 后立刻写出第一个事件；至少转发 `message` / `toolCall` / `chatEnd` / `error`；用 heartbeat 保活；在 `chatEnd`、错误路径、`res.close` 里都要移除**当前请求**注册的监听器。`connect(session_id)` 会复用同一 client 缓存的会话实例和事件总线，因此示例用 `activeSessionStreams` 拒绝同一会话的并发请求；单个 SSE 请求结束时不要调用 `chat.dispose()`，否则会中断后续复用该会话的请求。

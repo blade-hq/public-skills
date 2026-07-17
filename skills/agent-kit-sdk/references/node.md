@@ -108,8 +108,7 @@ const { session_id } = await client.sessions.createSessionWithRequest({
 
 const detail = await client.sessions.getSession(session_id)
 const sessions = await client.sessions.listSessions()
-const turns = await client.sessions.getSessionTurns(session_id)   // 渲染用的结构化消息
-await client.sessions.deleteSession(session_id)
+const turns = await client.sessions.getSessionTurns(session_id)   // 原始 TurnProjection；渲染请使用 AgentSession.getState().messages
 
 // 上传业务文件到会话工作区（Node 18 需要从 node:buffer 导入 File）
 import { File } from "node:buffer"
@@ -123,8 +122,12 @@ if (result.failed?.length) throw new Error(`上传失败: ${result.failed}`)
 上传后在消息里写清文件路径，让智能体读取处理：
 
 ```ts
-await client.headless.runInSession(session_id, "请读取工作区里的 report.md，提取标题和风险列表。")
-client.socket().disconnect()
+try {
+  await client.headless.runInSession(session_id, "请读取工作区里的 report.md，提取标题和风险列表。")
+} finally {
+  client.socket().disconnect()
+  await client.sessions.deleteSession(session_id) // 分析结束后再清理会话
+}
 ```
 
 其余 REST 接口（技能、模型、其余不常用的接口）见 [rest-api.md](rest-api.md)。
