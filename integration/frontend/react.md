@@ -115,10 +115,12 @@ const commands = {
 ## 创建会话时指定参数
 
 ```tsx
-import { useAgentSession } from "@blade-hq/agent-react"
+import type { BladeClient } from "@blade-hq/agent-client"
+import { ChatView, useAgentSession } from "@blade-hq/agent-react"
 
-function App() {
+function App({ client }: { client: BladeClient }) {
   const { session } = useAgentSession(undefined, {
+    client,
     createRequest: { intent: "季度报表分析", solution_id: "my-solution" },
   })
   return session ? <ChatView session={session} /> : null

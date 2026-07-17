@@ -87,13 +87,21 @@ FormData 字段：
 
 ## 智能体读取文件
 
-上传后在消息里写清文件路径，并显式传 `mode: "executing"`：
+上传后在消息里使用返回的文件路径。Node.js 一次性任务优先用 headless，它会等待终态：
 
 ```ts
-const chat = await client.sessions.connect(session_id)
-await chat.send("请读取工作区里的 q2-launch-notes.md，提取标题和风险列表。", {
-  mode: "executing",
-})
+const uploadedPath = result.uploaded[0]
+if (!uploadedPath) throw new Error("上传结果里没有文件路径")
+
+try {
+  const reply = await client.headless.runInSession(
+    session_id,
+    `请读取工作区里的 ${uploadedPath}，提取标题和风险列表。`,
+  )
+  console.log(reply)
+} finally {
+  client.socket().disconnect()
+}
 ```
 
 ## 常见问题
