@@ -94,7 +94,8 @@ const sessions = await client.sessions.listSessions()
 const turns = await client.sessions.getSessionTurns(session_id)   // 渲染用的结构化消息
 await client.sessions.deleteSession(session_id)
 
-// 上传业务文件到会话工作区（Node 18+ 有全局 File）
+// 上传业务文件到会话工作区（Node 18 需要从 node:buffer 导入 File）
+import { File } from "node:buffer"
 import { readFile } from "node:fs/promises"
 const result = await client.sessions.uploadFiles(session_id, ".", [
   { file: new File([await readFile("report.md")], "report.md"), name: "report.md" },

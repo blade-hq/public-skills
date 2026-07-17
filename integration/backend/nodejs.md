@@ -156,6 +156,7 @@ app.post("/api/sessions/:session_id/chat", async (req, res) => {
 
   const chat = await client.sessions.connect(session_id)
   const heartbeat = setInterval(() => send("heartbeat", { ts: Date.now() }), 15000)
+  let finished = false
 
   const offs = [
     chat.on("message", (e) => send("message", e.message)),
@@ -166,9 +167,10 @@ app.post("/api/sessions/:session_id/chat", async (req, res) => {
   ]
 
   function finish() {
+    if (finished) return
+    finished = true
     clearInterval(heartbeat)
     for (const off of offs) off()
-    chat.dispose()
     if (!res.writableEnded) res.end()
   }
   res.on("close", finish)
@@ -177,4 +179,4 @@ app.post("/api/sessions/:session_id/chat", async (req, res) => {
 })
 ```
 
-要点：`res.writeHead` 后立刻写出第一个事件；至少转发 `message` / `toolCall` / `chatEnd` / `error`；用 heartbeat 保活；在 `chatEnd`、错误路径、`res.close` 里都要清理。
+要点：`res.writeHead` 后立刻写出第一个事件；至少转发 `message` / `toolCall` / `chatEnd` / `error`；用 heartbeat 保活；在 `chatEnd`、错误路径、`res.close` 里都要移除**当前请求**注册的监听器。`connect(session_id)` 会复用同一 client 缓存的会话实例，因此单个 SSE 请求结束时不要调用 `chat.dispose()`，否则会同时中断仍在使用该会话的其他请求。
