@@ -175,7 +175,12 @@ app.post("/api/sessions/:session_id/chat", async (req, res) => {
   }
   res.on("close", finish)
 
-  await chat.send(message, { mode: "executing" })
+  try {
+    await chat.send(message, { mode: "executing" })
+  } catch (error) {
+    send("error", { message: error instanceof Error ? error.message : String(error) })
+    finish()
+  }
 })
 ```
 

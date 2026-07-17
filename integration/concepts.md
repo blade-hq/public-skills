@@ -37,7 +37,9 @@ const client = new BladeClient({ baseUrl: "https://blade.example.com" })
 export default function App() {
   return (
     <BladeProvider client={client}>
-      <ChatView />
+      <div style={{ height: "100vh", display: "flex", flexDirection: "column", minHeight: 0 }}>
+        <ChatView />
+      </div>
     </BladeProvider>
   )
 }

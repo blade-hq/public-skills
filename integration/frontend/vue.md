@@ -202,14 +202,19 @@ import { watch } from "vue"
 
 const { session } = useAgentSession(client, sessionId)
 
-watch(session, (chat) => {
+watch(session, (chat, _previousChat, onCleanup) => {
   if (!chat) return
-  chat.on("toolCall", ({ toolCall }) => console.log("调用工具:", toolCall.name))
-  chat.on("toolResult", ({ toolCall }) => {
-    if (toolCall.name.endsWith("WriteOrder")) refreshOrders()
+  const offs = [
+    chat.on("toolCall", ({ toolCall }) => console.log("调用工具:", toolCall.name)),
+    chat.on("toolResult", ({ toolCall }) => {
+      if (toolCall.name.endsWith("WriteOrder")) refreshOrders()
+    }),
+    chat.on("chatEnd", ({ status }) => console.log("回复结束:", status)),
+    chat.on("error", ({ message }) => console.error(message)),
+  ]
+  onCleanup(() => {
+    for (const off of offs) off()
   })
-  chat.on("chatEnd", ({ status }) => console.log("回复结束:", status))
-  chat.on("error", ({ message }) => console.error(message))
 })
 ```
 
