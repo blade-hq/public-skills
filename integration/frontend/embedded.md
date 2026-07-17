@@ -69,4 +69,5 @@ SDK 的安全保障：
 | 场景 | 建议 |
 | --- | --- |
 | 想深度定制聊天界面、共享登录态、多个聊天并存 | 同页集成（[React](./react.md) / [Vue](./vue.md)） |
-| 只想"塞一个 Blade 聊天进来"，不想给主应用加 npm 依赖，要求与主应用彻底隔离 | iframe + `connectEmbedded` |
+| 只想"塞一个 Blade 聊天进来"，不想在宿主渲染聊天 UI，但需要双向协作 API | iframe + `connectEmbedded`（仍需安装 `@blade-hq/agent-client`） |
+| 主应用不能添加任何 npm 依赖，且只需要展示 Blade 聊天 | 使用纯 iframe；不调用 `connectEmbedded`，也就没有 `onCommand` / `attach` / `insertText` / `send` 协作 API |

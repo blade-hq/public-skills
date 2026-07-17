@@ -57,4 +57,5 @@ chat.dispose()
 | 场景 | 建议 |
 | --- | --- |
 | 想深度定制聊天界面、共享登录态、多个聊天并存 | 用 `@blade-hq/agent-react` 或 `@blade-hq/agent-client` 同页集成 |
-| 只想"塞一个 Blade 聊天进来"，不想引入 npm 依赖到主应用、要求与主应用彻底隔离 | 用 iframe + `connectEmbedded` |
+| 只想"塞一个 Blade 聊天进来"，不想在宿主渲染聊天 UI，但需要双向协作 API | 用 iframe + `connectEmbedded`（仍需安装 `@blade-hq/agent-client`） |
+| 主应用不能添加任何 npm 依赖，且只需要展示 Blade 聊天 | 使用纯 iframe；不调用 `connectEmbedded`，也就没有 `onCommand` / `attach` / `insertText` / `send` 协作 API |
