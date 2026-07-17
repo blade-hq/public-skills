@@ -16,7 +16,7 @@ description: >
 本技能基于以下版本或以上：
 
 - 阿里云镜像：`registry.cn-beijing.aliyuncs.com/bladeai/blade-agent:v0.4.7`
-- NPM：`@blade-hq/agent-kit@0.4.7`
+- NPM：`@blade-hq/agent-client`、`@blade-hq/agent-react`
 - PyPI：`blade-agent-kit==0.4.7`
 
 低于上述版本时，`manifest_version: 3`、BizRole、`local_skills` / `imported_skills` 等结构可能不存在或不一致，请先升级 blade-agent 再按本技能操作。

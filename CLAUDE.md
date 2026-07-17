@@ -19,7 +19,7 @@
 
 | 项目 | 定位 |
 |------|------|
-| blade-agent | 核心 AI Agent 引擎 + Web UI + SDK（`@blade-hq/agent-kit`） |
+| blade-agent | 核心 AI Agent 引擎 + Web UI + 前端 SDK（`@blade-hq/agent-client` 框架无关核心 + `@blade-hq/agent-react` React 绑定） |
 | skill_registry | Skill 注册中心，提供搜索、版本管理、上传下载 |
 | blade-os | 浏览器桌面工作台，应用以 ES Module 懒加载 |
 | llm-gateway | 统一 LLM 网关，多上游路由 + OpenAI/Anthropic 协议互转 |

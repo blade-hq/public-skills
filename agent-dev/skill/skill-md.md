@@ -37,22 +37,22 @@ SKILL.md 应该做**路由表**，不堆砌大量内容：
 ```markdown
 ---
 name: agent-kit-sdk
-description: "Agent Kit 集成目录：按 React、Vue 前端与 Node.js、Python 后端引导接入 Blade Agent。"
+description: "Blade 前端 SDK 集成：按 React、Vue、Node.js、iframe 嵌入场景引导接入。"
 ---
 
-# Agent Kit 集成目录
+# Blade 前端 SDK 集成
 
 本文件只做目录导航。根据宿主技术栈选择要读的文档。
 
 ## React 应用
 
-- [references/react-quickstart.md](references/react-quickstart.md)：最小可复制模板。
-- [references/sdk-entrypoints.md](references/sdk-entrypoints.md)：安装、包入口、配置。
+- [references/react.md](references/react.md)：ChatView、hooks、样式。
+- [references/client-core.md](references/client-core.md)：底层客户端与会话 API。
 
-## 后端
+## 其他场景
 
-- [references/backend-quickstart.md](references/backend-quickstart.md)：Node.js 后端模板。
-- [references/backend.md](references/backend.md)：完整后端用法。
+- [references/vue.md](references/vue.md)：Vue 数据层接入。
+- [references/node.md](references/node.md)：Node.js / 自动化。
 ```
 
 这样做的好处：

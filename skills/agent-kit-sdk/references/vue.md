@@ -1,6 +1,6 @@
-# Vue 接入
+# Vue 接入（@blade-hq/agent-client）
 
-Vue 项目只需要框架无关的核心包 `@blade-hq/agent-client`。它把 Socket.IO 协议、历史加载、流式消息合并、断线重连全部封装成一个**会话对象**（`AgentSession`），你只面对"状态快照 + 动作 + 事件"。
+Vue 项目只需要框架无关的核心包 `@blade-hq/agent-client`。它把实时通道、历史加载、流式消息合并、断线重连全部封装成一个**会话对象**（`AgentSession`），你只面对"状态快照 + 动作 + 事件"。
 
 ```bash
 npm install @blade-hq/agent-client
@@ -10,11 +10,13 @@ npm install @blade-hq/agent-client
 
 ## 初始化 client
 
+client 建在**模块作用域**，单独一个文件导出：
+
 ```ts
-// client 建在模块作用域，不要放进组件 setup 里——
-// 每次组件重建都会新建 client、重连一次，聊天会疯狂闪断
+// src/blade-client.ts
 import { BladeClient } from "@blade-hq/agent-client"
 
+// 不要放进组件 setup 里——每次组件重建都会新建 client、重连一次，聊天会疯狂闪断
 export const client = new BladeClient({
   baseUrl: "https://blade.example.com",   // 后端地址（域名+端口，不带路径）
 })
@@ -55,7 +57,7 @@ async function handleLogin() {
 </template>
 ```
 
-页面与后端同域部署时，cookie 自动生效，不需要登录按钮。三种登录方式（弹窗 / 令牌 / cookie 同域）的选择见[登录配置](./login.md)。
+页面与后端同域部署时，cookie 自动生效，不需要登录按钮。三种登录方式的选择见 [auth.md](auth.md)。
 
 ## useAgentSession composable
 
@@ -191,7 +193,7 @@ function submit() {
 实时连接断开时 SDK 会自动重连（期间 `connection` 是 `"reconnecting"`），重连后自动补齐断线期间漏掉的消息，**不需要你手动处理，也不会丢消息**。拿 `connection` 给用户显示个"连接中"提示即可。
 :::
 
-消息结构与工具调用渲染的细节见[聊天 UI 与自渲染](./chat-ui.md)。
+消息结构、工具调用渲染、智能体反问作答的完整说明见 [message-rendering.md](message-rendering.md) —— **自建 UI 必读**。
 
 ## 消费工具调用等事件
 
@@ -199,6 +201,8 @@ function submit() {
 
 ```ts
 import { watch } from "vue"
+import { client } from "./blade-client"
+import { useAgentSession } from "./composables/useAgentSession"
 
 const { session } = useAgentSession(client, sessionId)
 
@@ -218,7 +222,7 @@ watch(session, (chat, _previousChat, onCleanup) => {
 })
 ```
 
-`on()` 返回取消函数；事件处理函数抛异常只告警，不会中断会话。完整事件表见[聊天 UI 与自渲染](./chat-ui.md#事件表)。
+`on()` 返回取消函数；事件处理函数抛异常只告警，不会中断会话。完整事件表见 [client-core.md](client-core.md#事件监听)。
 
 ## 发送选项
 
@@ -243,4 +247,4 @@ session.value?.onCommand("map.highlight", (payload) => {
 })
 ```
 
-详见[页面协作](./host-integration.md)。
+详见 [page-collaboration.md](page-collaboration.md)。

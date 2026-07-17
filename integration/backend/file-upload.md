@@ -44,16 +44,16 @@ await client.upload_file(session_id, "local/report.md", dir_path="uploads", remo
 ## Node.js SDK
 
 ```ts
+import { File } from "node:buffer"
 import { readFile } from "node:fs/promises"
-import { basename } from "node:path"
-import { BladeClient } from "@blade-hq/agent-kit/client"
+import { BladeClient } from "@blade-hq/agent-client"
 
 const client = new BladeClient({
   baseUrl: process.env.BLADE_AGENT_URL!,
   token: process.env.BLADE_AGENT_TOKEN!,
 })
 
-const { session_id } = await client.sessions.createSession("文档分析")
+const { session_id } = await client.sessions.createSessionWithRequest({ intent: "文档分析" })
 
 const result = await client.sessions.uploadFiles(session_id, ".", [
   { file: new File([await readFile("report.md")], "report.md"), name: "report.md" },
@@ -65,7 +65,7 @@ if (result.failed?.length) {
 ```
 
 ::: danger
-不要使用 `client.uploadFile(...)` 或 `client.workspaces.uploadFile(...)`，0.5.11 没有这些方法。
+不要使用 `client.uploadFile(...)` 或 `client.workspaces.uploadFile(...)`，SDK 里没有这些方法。上传统一走 `client.sessions.uploadFiles(session_id, dirPath, files)`。
 :::
 
 ## REST 直接上传
@@ -87,14 +87,21 @@ FormData 字段：
 
 ## 智能体读取文件
 
-上传后在消息里写清文件路径，并显式传 `mode: "executing"`：
+上传后在消息里使用返回的文件路径。Node.js 一次性任务优先用 headless，它会等待终态：
 
 ```ts
-socket.emit("chat:send", {
-  session_id,
-  message: "请读取工作区里的 q2-launch-notes.md，提取标题和风险列表。",
-  mode: "executing",
-})
+const uploadedPath = result.uploaded[0]
+if (!uploadedPath) throw new Error("上传结果里没有文件路径")
+
+try {
+  const reply = await client.headless.runInSession(
+    session_id,
+    `请读取工作区里的 ${uploadedPath}，提取标题和风险列表。`,
+  )
+  console.log(reply)
+} finally {
+  client.socket().disconnect()
+}
 ```
 
 ## 常见问题
@@ -102,7 +109,7 @@ socket.emit("chat:send", {
 | 问题 | 修复 |
 | --- | --- |
 | Agent 说找不到文件 | 确认上传返回的 `uploaded` 路径，消息中使用相同路径 |
-| 上传成功但 Agent 不执行 | 发送时显式传 `mode: "executing"` |
+| 上传成功但 Agent 不执行 | 发送时显式传 `{ mode: "executing" }` |
 | Node 报 `client.uploadFile is not a function` | 改用 `client.sessions.uploadFiles(session_id, ".", files)` |
 | 多文件路径错乱 | `paths` 数组长度和 `files` 数量要一致，顺序也要一致 |
 | 鉴权失败 | REST 请求同样需要 `Authorization: Bearer ...` |
